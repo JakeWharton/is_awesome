@@ -20,8 +20,10 @@ A up-to-date version of the master branch is always kept running at
 [awesome.jakewharton.com](http://awesome.jakewharton.com) for you to
 use.
 
-You can also POST data and receive a JSON response at
-[awesome.jakewharton.com/json/](http://awesome.jakewharton.com/json/).
+You can also POST data and receive a JSON or XML response at
+[awesome.jakewharton.com/json/](http://awesome.jakewharton.com/json/) or
+[awesome.jakewharton.com/xml/](http://awesome.jakewharton.com/xml/),
+respectively.
 
 Example JSON response:
     {
@@ -32,6 +34,15 @@ Example JSON response:
         "warning_count": 0,
         "warnings": "<ul></ul>"
     }
+
+Example XML response:
+    <?xml version="1.0" encoding="UTF-8"?>
+    <compliant dxva="true" awesome="false">
+        <errors count="1">
+            <li><strong>Awesome: </strong><code>cabac</code> must be 1. Got: 2</li>
+        </errors>
+        <warnings count="0"/>
+    </compliant>
 
 
 Developed By

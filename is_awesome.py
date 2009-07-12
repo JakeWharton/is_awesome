@@ -237,8 +237,14 @@ elif output == XML:
     print
     print '<?xml version="1.0" encoding="UTF-8"?>'
     print '<compliant dxva="%s" awesome="%s">' % (is_d and 'true' or 'false', is_a and 'true' or 'false')
-    print '\t<errors count="%s">%s\n\t</errors>' % (len(errors.children), errors.render_children(2, True))
-    print '\t<warnings count="%s">%s\n\t</warnings>' % (len(warnings.children), warnings.render_children(2, True))
+    if len(errors.children) > 0:
+        print '\t<errors count="%s">%s\n\t</errors>' % (len(errors.children), errors.render_children(2, True))
+    else:
+        print '\t<errors count="0"/>'
+    if len(warnings.children) > 0:
+        print '\t<warnings count="%s">%s\n\t</warnings>' % (len(warnings.children), warnings.render_children(2, True))
+    else:
+        print '\t<warnings count="0"/>'
     print '</compliant>'
 
 elif output == XHTML:
