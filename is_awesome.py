@@ -153,7 +153,7 @@ def is_awesome(text, is_animation):
         is_a = False
         errors.append(a + 'Me_range must be greater than or equal to 16. Got: ' + info['video']['Encoding settings']['me_range'])
     
-    #Check 12: trellis = 1 or 2
+    #Check 12: trellis = 1 or 2 or deadzone <= 10
     trellis = info['video']['Encoding settings']['trellis']
     if trellis != '1' and trellis != 2:
         deadzone = map(int, info['video']['Encoding settings']['deadzone'].split(','))
