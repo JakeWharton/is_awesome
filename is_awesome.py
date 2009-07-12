@@ -237,7 +237,7 @@ elif output == XML:
     print
     print '<?xml version="1.0" encoding="UTF-8"?>'
     print '<compliant>'
-    print '<dxva>%s</dxva>' % is_d and 'true' or 'false'
+    print '\t<dxva>%s</dxva>' % is_d and 'true' or 'false'
     print '\t<awesome>%s</awesome>' % is_a and 'true' or 'false'
     print '\t<errors count="%s">%s\n\t</errors>' % (len(errors.children), errors.render_children(2, True))
     print '\t<warnings count="%s">%s\n\t</warnings>' % (len(warnings.children), warnings.render_children(2, True))
