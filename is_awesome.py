@@ -33,7 +33,7 @@ def is_awesome(text, is_animation):
     errors = []
     
     def warn_d(message):
-        warnings.append(strong('DXVA: '), )
+        warnings.append(strong('DXVA: '), message)
     def error_a(message, value=None):
         is_a = False
         if value:
