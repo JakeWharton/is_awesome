@@ -196,11 +196,13 @@ def is_awesome(text, is_animation):
 #Output types
 XHTML = 0
 JSON  = 1
+XML = 2
 
 #URL mapping
 urls = (
     (r'^/$', XHTML),
-    (r'^/json/?$', JSON),
+    (r'^/json/$', JSON),
+    (r'^/xml/$', XML),
 )
 
 #Determine output format
@@ -214,20 +216,32 @@ for regex, url_output in urls:
 is_post = 'mediainfo' in web.post
 if is_post:
     try:
-        (is_a, is_d, errors, warnings) = is_awesome(web.post['mediainfo'], 'is_animation' in web.post)
+        (is_a, is_d, errors, warnings) = is_awesome(web.post['mediainfo'], 'is_animation' in web.post and web.post['is_animation'])
     except (ValueError, KeyError), e:
         is_a = is_d = False
         errors = ul(li(strong('Fatal %s: ' % e.__type__.__name__), str(e)))
         warnings = ul()
+else:
+    is_a = is_d = False
+    errors = ul(li(strong('Fatal Error: '), 'No MediaInfo text POSTed.'))
+    warnings = ul()
 
+#Output in specified format
 if output == JSON:
     print 'Content-type: application/json'
     print
-    if not is_post:
-        is_a = is_d = False
-        errors = ul(li(strong('Fatal Error: '), 'No MediaInfo text POSTed.'))
-        warnings = ul()
     print '{"dxva": %s, "awesome": %s, "error_count": %s, "errors": "%s", "warning_count": %s, "warnings": "%s"}' % (is_d and 'true' or 'false', is_a and 'true' or 'false', len(errors.children), str(errors), len(warnings.children), str(warnings))
+
+elif output == XML:
+    print 'Content-type: application/xml'
+    print
+    print '<?xml version="1.0" encoding="UTF-8"?>'
+    print '<compliant>'
+    print '<dxva>%s</dxva>' % is_d and 'true' or 'false'
+    print '\t<awesome>%s</awesome>' % is_a and 'true' or 'false'
+    print '\t<errors count="%s">%s\n\t</errors>' % (len(errors.children), errors.render_children(2, True))
+    print '\t<warnings count="%s">%s\n\t</warnings>' % (len(warnings.children), warnings.render_children(2, True))
+    print '</compliant>'
 
 elif output == XHTML:
     page = xhtmlpage('Is Awesome?')
