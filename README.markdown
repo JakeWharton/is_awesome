@@ -17,8 +17,9 @@ Awesome too.
 Usage
 =====
 A up-to-date version of the master branch is always kept running at 
-http://awesome.jakewharton.com for you to use. Should you want to host 
-your own copy, though, a few simple steps are needed.
+[awesome.jakewharton.com](http://awesome.jakewharton.com) for you to
+use. Should you want to host your own copy, though, a few simple steps
+are needed.
 
 1.  Run `git clone git://github.com/JakeWharton/is_awesome.git`.
 2.  Symlink a directory in your wwwroot to the `is_awesome` directory.
@@ -33,7 +34,8 @@ Developed By
 ============
 * Jake Wharton - <jakewharton@gmail.com>
 
-Git repository located at http://github.com/JakeWharton/is_awesome/
+Git repository located at
+[github.com/JakeWharton/is_awesome/](http://github.com/JakeWharton/is_awesome/)
 
 
 License
