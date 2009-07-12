@@ -211,7 +211,7 @@ for regex, url_output in urls:
         break
 
 #Parse POSTed data (if any)
-is_post = 'mediainfo' in web.post:
+is_post = 'mediainfo' in web.post
 if is_post:
     try:
         (is_a, is_d, errors, warnings) = is_awesome(web.post['mediainfo'], 'is_animation' in web.post)
