@@ -200,7 +200,7 @@ JSON  = 1
 #URL mapping
 urls = (
     (r'^/$', XHTML),
-    (r'^/json/?$', JSON,
+    (r'^/json/?$', JSON),
 )
 
 #Determine output format
