@@ -1,0 +1,3 @@
+[submodule "vendor/pyy"]
+	path = vendor/pyy
+	url = git://github.com/Knio/pyy.git
