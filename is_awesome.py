@@ -190,7 +190,7 @@ def is_awesome(text, is_animation):
     return (is_a and is_d, is_d, errors)
 
 page = xhtmlpage('Is Awesome?')
-page.html.head += link(rel='stylesheet', type='text/css', href='isawesome.css')
+page.html.head += link(rel='stylesheet', type='text/css', href='is_awesome.css')
 
 wrapper = page.html.body.add(div(id='wrapper'))
 header  = wrapper.add(div(id='header'))
@@ -198,7 +198,7 @@ content = wrapper.add(div(id='content'))
 footer  = wrapper.add(div(id='footer'))
 
 header += h1(a('Is Awesome?', href='/'))
-footer += div('Designed and developed by ', a('Jake Wharton', href='http://jakewharton.com'))    
+footer += div('Designed and developed by ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a('Source code', href='http://github.com/JakeWharton/is_awesome/'), '.')
 
 if 'mediainfo' in web.post:
     try:
