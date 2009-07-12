@@ -171,12 +171,12 @@ def is_awesome(text, is_animation):
         #Check 14: 0<=deblock<=2
         if deblock < 0 or deblock > 2:
             is_a = False
-            errors.append(a + 'Deblock must be between 0 and 2. Got: ' + deblock)
+            errors.append(a + 'Deblock must be between 0 and 2. Got: ' + str(deblock))
     else:
         #Check 14: -3<=deblock<=-1
         if deblock < -3 or deblock > -1:
             is_a = False
-            errors.append(a + 'Deblock must be between -3 and -1. Got: ' + deblock)
+            errors.append(a + 'Deblock must be between -3 and -1. Got: ' + str(deblock))
     
     #Check 15: me != dia or hex
     me = info['video']['Encoding settings']['me']
