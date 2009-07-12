@@ -33,7 +33,7 @@ def is_awesome(text, is_animation):
     errors = []
     
     def warn_d(message):
-        warnings.append(strong('DXVA: '), message)
+        warnings.append(strong('DXVA: '), )
     def error_a(message, value=None):
         is_a = False
         if value:
@@ -115,64 +115,64 @@ def is_awesome(text, is_animation):
     
     #Check 5: cabac = 1
     if info['video']['Encoding settings']['cabac'] != '1':
-        error_a(code('cabac'), ' must be 1.', info['video']['Encoding settings']['cabac'])
+        error_a(code('cabac')+' must be 1.', info['video']['Encoding settings']['cabac'])
     
     #Check 7: vbv_maxrate <= 50000
     if 'vbv_maxrate' in info['video']['Encoding settings']:
         if int(info['video']['Encoding settings']['vbv_maxrate']) > 50000:
             error_d(code('vbv_maxrate'), ' must be less than or equal to 50,000.', info['video']['Encoding settings']['vbv_maxrate'])
     else:
-        warn_d(code('vbv_maxrate'), ' can not be determined. Assuming a value lower than 50,000.')
+        warn_d(code('vbv_maxrate')+' can not be determined. Assuming a value lower than 50,000.')
     
     #Check 8: vbv_bufsize <= 50000
     if 'vbv_bufsize' in info['video']['Encoding settings']:
         if int(info['video']['Encoding settings']['vbv_bufsize']) > 50000:
-            error_d(code('vbv_bufsize'), ' must be less than or equal to 50,000.', info['video']['Encoding settings']['vbv_bufsize'])
+            error_d(code('vbv_bufsize')+' must be less than or equal to 50,000.', info['video']['Encoding settings']['vbv_bufsize'])
     else:
-        warn_d(code('vbv_bufsize'), ' can not be determined. Assuming a value lower than 50,000.')
+        warn_d(code('vbv_bufsize')+' can not be determined. Assuming a value lower than 50,000.')
     
     #Check 9: analyse = 0x3:0x113
     if info['video']['Encoding settings']['analyse'] != '0x3:0x113':
-        error_d(code('analyse'), ' must be 0x3:0x113.', info['video']['Encoding settings']['analyse'])
+        error_d(code('analyse')+' must be 0x3:0x113.', info['video']['Encoding settings']['analyse'])
     
     #Check 10: rc = crf or 2-pass
     rc = info['video']['Encoding settings']['rc']
     if rc != 'crf' and rc != '2pass':
-        error_a(code('rc'), ' must be CRF or 2pass.', info['video']['Encoding settings']['rc'])
+        error_a(code('rc')+' must be CRF or 2pass.', info['video']['Encoding settings']['rc'])
     
     #Check 11: me_range >= 16
     if int(info['video']['Encoding settings']['me_range']) < 16:
-        error_a(code('me_range'), ' must be greater than or equal to 16.', info['video']['Encoding settings']['me_range'])
+        error_a(code('me_range')+' must be greater than or equal to 16.', info['video']['Encoding settings']['me_range'])
     
     #Check 12: trellis = 1 or 2 or deadzone <= 10
     trellis = info['video']['Encoding settings']['trellis']
     if trellis != '1' and trellis != 2:
         deadzone = map(int, info['video']['Encoding settings']['deadzone'].split(','))
         if deadzone[0] > 10 or deadzone[1] > 10:
-            error_a(code('trellis'), ' must be 1 or 2 or ', code('deadzone'), ' values need to be less than 10.', info['video']['Encoding settings']['trellis'] + ' and ' + info['video']['Encoding settings']['deadzone'])
+            error_a(code('trellis')+' must be 1 or 2 or ', code('deadzone'), ' values need to be less than 10.', info['video']['Encoding settings']['trellis'] + ' and ' + info['video']['Encoding settings']['deadzone'])
     
     #Check 13: bframe >= 3
     if int(info['video']['Encoding settings']['bframes']) < 3:
-        error_a(code('bframes'), ' must be greater than or equal to 3.', info['video']['Encoding settings']['bframes'])
+        error_a(code('bframes')+' must be greater than or equal to 3.', info['video']['Encoding settings']['bframes'])
     
     deblock = int(info['video']['Encoding settings']['deblock'].split(':')[2])
     if is_animation:
         #Check 14: 0<=deblock<=2
         if deblock < 0 or deblock > 2:
-            error_a(code('deblock'), ' must be between 0 and 2.', deblock)
+            error_a(code('deblock')+' must be between 0 and 2.', deblock)
     else:
         #Check 14: -3<=deblock<=-1
         if deblock < -3 or deblock > -1:
-            error_a(code('deblock'), ' must be between -3 and -1.', deblock)
+            error_a(code('deblock')+' must be between -3 and -1.', deblock)
     
     #Check 15: me != dia or hex
     me = info['video']['Encoding settings']['me']
     if me == 'dia' or me == 'hex':
-        error_a(code('me'), ' must not be "dia" or "hex".', me)
+        error_a(code('me')+' must not be "dia" or "hex".', me)
     
     #Check 16: subme >= 7
     if int(info['video']['Encoding settings']['subme']) < 7:
-        error_a(code('subme'), ' must be greater than or equal to 7.', info['video']['Encoding settings']['subme'])
+        error_a(code('subme')+' must be greater than or equal to 7.', info['video']['Encoding settings']['subme'])
     
     #AWESOME!
     return (is_a and is_d, is_d, errors, warnings)
