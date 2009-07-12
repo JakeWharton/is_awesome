@@ -33,19 +33,19 @@ def is_awesome(text, is_animation):
     errors = []
     
     def warn_d(message):
-        warnings.append(strong('DXVA: ')+message)
+        warnings.append(li(strong('DXVA: '), message))
     def error_a(message, value=None):
         is_a = False
         if value:
-            errors.append(strong('Awesome: '), '%s Got: %s' % (message, value))
+            errors.append(li(strong('Awesome: '), '%s Got: %s' % (message, value)))
         else:
-            errors.append(strong('Awesome: '), message)
+            errors.append(li(strong('Awesome: '), message))
     def error_d(message, value=None):
         is_d = False
         if value:
-            errors.append(strong('DXVA: '), '%s Got: %s' % (message, value))
+            errors.append(li(strong('DXVA: '), '%s Got: %s' % (message, value)))
         else:
-            errors.append(strong('DXVA: '), message)
+            errors.append(li(strong('DXVA: '), message))
     
     is_1080p = (info['video']['Width'] == '1 920 pixels')
     is_720p  = (info['video']['Width'] == '1 280 pixels')
@@ -205,13 +205,13 @@ if 'mediainfo' in web.post:
             content += h3('Warnings')
             e = content.add(ul())
             for warning in warnings:
-                e += li(warning)
+                e += warning
         
         if not is_a or not is_d:
             content += h3('Errors')
             e = content.add(ul())
             for error in errors:
-                e += li(error)
+                e += error
     except (ValueError, KeyError), e:
         content += div(h1('Fatal Error'), p(e.__class__.__name__, ': ', e), _class='bad')
         
