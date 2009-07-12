@@ -220,7 +220,7 @@ if 'mediainfo' in web.post:
             content += h3('Warnings')
             content += warnings
         
-        if len(errors.children) > 0
+        if len(errors.children) > 0:
             content += h3('Errors')
             content += errors
     except (ValueError, KeyError), e:
