@@ -1,11 +1,19 @@
-.good { border: 1px solid #0f0; background-color: #afa; }
-.bad { border: 1px solid #f00; background-color: #faa; }
-.good, .bad { padding: 2em; margin: 2em; }
-.good h1, .bad h1 { text-align: center; }
+.good { border: 1px solid #0f0; background-color: #bfb; }
+.bad { border: 1px solid #f00; background-color: #fbb; }
+.good, .bad { padding: .5em; margin: 2em; }
+.good h1, .bad h1 { text-align: center; margin: 0; font-size: 3em; padding: 0; }
+.good p, .bad p { margin: 1em 0 0; padding: 0; }
 
-body { margin: 0; padding: 2em; background-color: #aaa; }
-#wrapper { width: 600px; border: 1px solid #000; background-color: #fff; }
-#header { height: 100px; background-color: #eee; padding: 2em; }
-#header h1 { text-align: center; }
-#content { padding: 2em; }
-#footer { text-align: right; padding: 1em; }
+body { margin: 0; padding: 1em; background-color: #aaa; text-align: center; font-family: sans-serif; }
+a:link, a:visited, a:active { color: #00f; }
+a:hover { color: #44f; }
+
+#wrapper { width: 600px; border: 1px solid #000; background-color: #fff; margin-left: auto; margin-right: auto; }
+#header { background-color: #eee; padding: 1em; }
+#header h1 { margin: 0; }
+#header h1 a:link, #header h1 a:visited, #header h1 a:active { color: #000; }
+#header h1 a:hover { color: #444; }
+#content { padding: 0em 2em 1em; text-align: left; }
+#content form textarea { width: 100%; height: 200px; margin: .5em 0 0; }
+#content form input { padding: .5em 5em; font-weight: bold; }
+#footer { text-align: right; padding: 1em; background-color: #eee; font-size: .75em; }

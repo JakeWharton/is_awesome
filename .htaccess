@@ -1,4 +1,2 @@
-RewriteEngine On
-RewriteBase /
-RewriteCond %{REQUEST_URI} !^/favicon.ico$ 
-RewriteRule ^(.*)$ isawesome.py [L]
+Options -Indexes
+DirectoryIndex isawesome.py
