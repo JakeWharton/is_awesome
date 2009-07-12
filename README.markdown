@@ -18,16 +18,20 @@ Usage
 =====
 A up-to-date version of the master branch is always kept running at 
 [awesome.jakewharton.com](http://awesome.jakewharton.com) for you to
-use. Should you want to host your own copy, though, a few simple steps
-are needed.
+use.
 
-1.  Run `git clone git://github.com/JakeWharton/is_awesome.git`.
-2.  Symlink a directory in your wwwroot to the `is_awesome` directory.
-3.  Enter the `is_awesome` directory and run `git submodule init` 
-    followed by `git submodule update`.
+You can also POST data and receive a JSON response at
+[awesome.jakewharton.com/json/](http://awesome.jakewharton.com/json/).
 
-You should now have a working copy of the script in whatever directory 
-you symlinked the `is_awesome` directory to.
+Example JSON response:
+    {
+        "dxva": true,
+        "awesome": false,
+        "error_count": 1,
+        "errors": "<ul><li><strong>Awesome: </strong><code>cabac</code> must be 1. Got: 2</li></ul>",
+        "warning_count": 0,
+        "warnings": "<ul></ul>"
+    }
 
 
 Developed By

@@ -3,7 +3,7 @@
 from vendor.pyy          import web
 from vendor.pyy.htmlpage import xhtmlpage
 from vendor.pyy.xhtml11  import *
-
+import re
 
 def MediaInfo2Dict(text):
     """
@@ -193,21 +193,55 @@ def is_awesome(text, is_animation):
     return (is_a and is_d, is_d, errors, warnings)
 
 
-page = xhtmlpage('Is Awesome?')
-page.html.head += link(rel='stylesheet', type='text/css', href='is_awesome.css')
+#Output types
+XHTML = 0
+JSON  = 1
 
-wrapper = page.html.body.add(div(id='wrapper'))
-header  = wrapper.add(div(id='header'))
-content = wrapper.add(div(id='content'))
-footer  = wrapper.add(div(id='footer'))
+#URL mapping
+urls = (
+    (r'^/$', XHTML),
+    (r'^/json/?$', JSON,
+)
 
-header += h1(a('Is Awesome?', href='/'))
-footer += div('Designed and developed by ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a('Source code', href='http://github.com/JakeWharton/is_awesome/'), '.')
+#Determine output format
+output = XHTML
+for regex, url_output in urls:
+    if re.match(regex, web.env['REQUEST_URI']):
+        output = url_output
+        break
 
-if 'mediainfo' in web.post:
+#Parse POSTed data (if any)
+is_post = 'mediainfo' in web.post:
+if is_post:
     try:
         (is_a, is_d, errors, warnings) = is_awesome(web.post['mediainfo'], 'is_animation' in web.post)
-        
+    except (ValueError, KeyError), e:
+        is_a = is_d = False
+        errors = ul(li(strong('Fatal %s: ' % e.__type__.__name__), str(e)))
+        warnings = ul()
+
+if output == JSON:
+    print 'Content-type: application/json'
+    print
+    if not is_post:
+        is_a = is_d = False
+        errors = ul(li(strong('Fatal Error: '), 'No MediaInfo text POSTed.'))
+        warnings = ul()
+    print '{"dxva": %s, "awesome": %s, "error_count": %s, "errors": "%s", "warning_count": %s, "warnings": "%s"}' % (is_d and 'true' or 'false', is_a and 'true' or 'false', len(errors.children), str(errors), len(warnings.children), str(warnings))
+
+elif output == XHTML:
+    page = xhtmlpage('Is Awesome?')
+    page.html.head += link(rel='stylesheet', type='text/css', href='is_awesome.css')
+    
+    wrapper = page.html.body.add(div(id='wrapper'))
+    header  = wrapper.add(div(id='header'))
+    content = wrapper.add(div(id='content'))
+    footer  = wrapper.add(div(id='footer'))
+    
+    header += h1(a('Is Awesome?', href='/'))
+    footer += div('Designed and developed by ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a('Source code', href='http://github.com/JakeWharton/is_awesome/'), '.')
+    
+    if is_post:
         dxva = div(h1('DXVA'), p('DirectX Video Acceleration (DXVA) is a Microsoft API specification for the Microsoft Windows and Xbox 360 platforms that allows video decoding to be hardware accelerated.'))
         awsm = div(h1('Awesome'), p('"Awesome" is a standard higher than DXVA. It is used to determine the highest quality encodes by certain individuals. If you are unaware of it, then you most likely do not need to concern yourself with compliance.'))
         
@@ -223,28 +257,29 @@ if 'mediainfo' in web.post:
         if len(errors.children) > 0:
             content += h3('Errors')
             content += errors
-    except (ValueError, KeyError), e:
-        content += div(h1('Fatal Error'), p(e.__class__.__name__, ': ', e), _class='bad')
-        
-    content += p(a('Try Again &raquo;', href='/'))
-else:
-    content += p('The requirements for testing DXVA compliance are straight forward but tedious to check. The rules for "awesome"-ness are even more strict.')
-    content += p('Paste the text output of the ', a('MediaInfo', href='http://mediainfo.sf.net'), ' program below and press "Check".')
-    form = content.add(form(method='post', action=''))
-    form += label('Is Animation?:', _for='is_animation')
-    form += input(type='checkbox', name='is_animation')
-    form += br()
-    form += textarea(name='mediainfo')
-    form += br()
-    form += input(type='submit', name='submit', value='Check')
+            
+        content += p(a('Try Again &raquo;', href='/'))
+    else:
+        content += p('The requirements for testing DXVA compliance are straight forward but tedious to check. The rules for "awesome"-ness are even more strict.')
+        content += p('Paste the text output of the ', a('MediaInfo', href='http://mediainfo.sf.net'), ' program below and press "Check".')
+        form = content.add(form(method='post', action=''))
+        form += label('Is Animation?:', _for='is_animation')
+        form += input(type='checkbox', name='is_animation')
+        form += br()
+        form += textarea(name='mediainfo')
+        form += br()
+        form += input(type='submit', name='submit', value='Check')
 
-#Google Analytics
-page.html += script('''var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));''', 
-type='text/javascript')
-page.html += script('''try {
+    #Google Analytics
+    page.html += script('''
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+''', type='text/javascript')
+    page.html += script('''
+try {
 var pageTracker = _gat._getTracker("UA-3637749-9");
 pageTracker._trackPageview();
-} catch(err) {}''', type='text/javascript')
+} catch(err) {}
+''', type='text/javascript')
 
-page.render()
+    page.render()
