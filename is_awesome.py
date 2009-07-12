@@ -32,49 +32,53 @@ def is_awesome(text, is_animation):
     warnings = []
     errors = []
     
-    a = str(strong('Awesome: '))
-    d = str(strong('DXVA: '))
+    def warn_d(message):
+        warnings.append(strong('DXVA: '), message)
+    def error_a(message, value=None):
+        is_a = False
+        if value:
+            errors.append(strong('Awesome: '), '%s Got: %s' % (message, value))
+        else:
+            errors.append(strong('Awesome: '), message)
+    def error_d(message, value=None):
+        is_d = False
+        if value:
+            errors.append(strong('DXVA: '), '%s Got: %s' % (message, value))
+        else:
+            errors.append(strong('DXVA: '), message)
     
     is_1080p = (info['video']['Width'] == '1 920 pixels')
     is_720p  = (info['video']['Width'] == '1 280 pixels')
     
     #Check 1: 720p/1080p
     if not is_720p and not is_1080p:
-        is_d = False
-        errors.append(d + 'Must be 1920 or 1280 pixels wide. Got: ' + info['video']['Width'])
+        error_a('Must be 1920 or 1280 pixels wide.', info['video']['Width'])
     
     #Check 2: is x264
     if info['video']['Codec ID'] != 'V_MPEG4/ISO/AVC':
-        is_a = False
-        errors.append(a + 'Not MPEG4/ISO/AVC (x264). Got: ' + info['video']['Codec ID'])
+        error_a('Not MPEG4/ISO/AVC (x264) codec.', info['video']['Codec ID'])
     
     #Check 3: DTS or AC3 track
     if 'audio' in info:
         a_codec = info['audio']['Format']
         if not a_codec == 'DTS' and not a_codec == 'AC3':
-            is_a = False
-            errors.append(a + 'Audio track not DTS or AC3. Got: ' + info['audio']['Format'])
+            error_a('Audio track not DTS or AC3.', info['audio']['Format'])
     elif 'audio_#1' in info:
         a_codec = info['audio_#1']['Format']
         if not a_codec == 'DTS' and not a_codec == 'AC3':
-            is_a = False
-            errors.append(a + 'Audio track not DTS or AC3. Got: ' + info['audio_#1']['Format'])
+            error_a('Audio track not DTS or AC3.', info['audio_#1']['Format'])
     else:
-        is_a = False
-        errors.append('No audio tracks.')
+        error_a('No audio tracks.')
     
     #Check 4: English subtitles
     if 'text' in info:
         if info['text']['Language'] != 'English':
-            is_a = False
-            errors.append(a + 'Subtitle track not English. Got: ' + info['text']['Language'])
+            error_a('Subtitle track not English.', info['text']['Language'])
     elif 'text_#1' in info:
         if info['text_#1']['Language'] != 'English':
-            is_a = False
-            errors.append(a + 'Subtitle track not English. Got: ' + info['text_#1']['Language'])
+            error_a('Subtitle track not English.', info['text_#1']['Language'])
     else:
-        is_a = False
-        errors.append(a + 'No subtitle tracks.')
+        error_a('No subtitle tracks.')
     
     height = int(info['video']['Height'].replace('pixels', '').replace(' ', '').strip())
     ref = int(info['video']['Encoding settings']['ref'])
@@ -82,112 +86,93 @@ def is_awesome(text, is_animation):
         if height <= 720:
             #Check 6: 3<=ref<=6
             if ref < 3 or ref > 6:
-                is_d = False
-                errors.append(d + 'Reference frames not between 3 and 6. Got: ' + str(ref))
+                error_d('Reference frames not between 3 and 6.', ref)
         elif height <= 864:
             #Check 6: 3<=ref<=5
             if ref < 3 or ref > 5:
-                is_d = False
-                errors.append(d + 'Reference frames not between 3 and 5. Got: ' + str(ref))
+                error_d('Reference frames not between 3 and 5.', ref)
         else:
             #Check 6: 3<=ref<=4
             if ref < 3 or ref > 4:
-                is_d = False
-                errors.append(d + 'Reference frames not between 3 and 4. Got: ' + str(ref))
+                error_d('Reference frames not between 3 and 4.', ref)
     else:
         if height <= 540:
             #Check 6: 5<=ref<=12
             if ref < 5 or ref > 12:
-                is_d = False
-                errors.append(d + 'Reference frames not between 5 and 12. Got: ' + str(ref))
+                error_d('Reference frames not between 5 and 12.', ref)
         elif height <= 588:
             #Check 6: 5<=ref<=11
             if ref < 5 or ref > 11:
-                is_d = False
-                errors.append(d + 'Reference frames not between 5 and 11. Got: ' + str(ref))
+                error_d('Reference frames not between 5 and 11.', ref)
         elif height <= 648:
             #Check 6: 5<=ref<=10
             if ref < 5 or ref > 10:
-                is_d = False
-                errors.append(d + 'Reference frames not between 5 and 10. Got: ' + str(ref))
+                error_d('Reference frames not between 5 and 10.', ref)
         else:
             #Check 6: 5<=ref<=9
             if ref < 5 or ref > 9:
-                is_d = False
-                errors.append(d + 'Reference frames not between 5 and 9. Got: ' + str(ref))
+                error_d('Reference frames not between 5 and 9.', ref)
     
     #Check 5: cabac = 1
     if info['video']['Encoding settings']['cabac'] != '1':
-        is_a = False
-        errors.append(a + 'Cabac must be 1. Got: ' + info['video']['Encoding settings']['cabac'])
+        error_a(code('cabac'), ' must be 1.', info['video']['Encoding settings']['cabac'])
     
     #Check 7: vbv_maxrate <= 50000
     if 'vbv_maxrate' in info['video']['Encoding settings']:
         if int(info['video']['Encoding settings']['vbv_maxrate']) > 50000:
-            is_d = False
-            errors.append(d + 'vbv_maxrate must be less than or equal to 50,000. Got: ' + info['video']['Encoding settings']['vbv_maxrate'])
+            error_d(code('vbv_maxrate'), ' must be less than or equal to 50,000.', info['video']['Encoding settings']['vbv_maxrate'])
     else:
-        warnings.append('vbv_maxrate can not be determined. Assuming a value lower than 50,000.')
+        warn_d(code('vbv_maxrate'), ' can not be determined. Assuming a value lower than 50,000.')
     
     #Check 8: vbv_bufsize <= 50000
     if 'vbv_bufsize' in info['video']['Encoding settings']:
         if int(info['video']['Encoding settings']['vbv_bufsize']) > 50000:
-            is_d = False
-            errors.append(d + 'vbv_bufsize must be less than or equal to 50,000. Got: ' + info['video']['Encoding settings']['vbv_bufsize'])
+            error_d(code('vbv_bufsize'), ' must be less than or equal to 50,000.', info['video']['Encoding settings']['vbv_bufsize'])
     else:
-        warnings.append('vbv_bufsize can not be determined. Assuming a value lower than 50,000.')
+        warn_d(code('vbv_bufsize'), ' can not be determined. Assuming a value lower than 50,000.')
     
     #Check 9: analyse = 0x3:0x113
     if info['video']['Encoding settings']['analyse'] != '0x3:0x113':
-        is_d = False
-        errors.append(d + 'Analyse must be 0x3:0x113. Got: ' + info['video']['Encoding settings']['analyse'])
+        error_d(code('analyse'), ' must be 0x3:0x113.', info['video']['Encoding settings']['analyse'])
     
     #Check 10: rc = crf or 2-pass
     rc = info['video']['Encoding settings']['rc']
     if rc != 'crf' and rc != '2pass':
-        is_a = False
-        errors.append(a + 'Rc must be CRF or 2pass. Got: ' + info['video']['Encoding settings']['rc'])
+        error_a(code('rc'), ' must be CRF or 2pass.', info['video']['Encoding settings']['rc'])
     
     #Check 11: me_range >= 16
     if int(info['video']['Encoding settings']['me_range']) < 16:
-        is_a = False
-        errors.append(a + 'Me_range must be greater than or equal to 16. Got: ' + info['video']['Encoding settings']['me_range'])
+        error_a(code('me_range'), ' must be greater than or equal to 16.', info['video']['Encoding settings']['me_range'])
     
     #Check 12: trellis = 1 or 2 or deadzone <= 10
     trellis = info['video']['Encoding settings']['trellis']
     if trellis != '1' and trellis != 2:
         deadzone = map(int, info['video']['Encoding settings']['deadzone'].split(','))
         if deadzone[0] > 10 or deadzone[1] > 10:
-            is_a = False
-            errors.append(a + 'Trellis must be 1 or 2 or deadzone values need to be less than 10. Got: ' + info['video']['Encoding settings']['trellis'] + ' and ' + info['video']['Encoding settings']['deadzone'])
+            error_a(code('trellis'), ' must be 1 or 2 or ', code('deadzone'), ' values need to be less than 10.', info['video']['Encoding settings']['trellis'] + ' and ' + info['video']['Encoding settings']['deadzone'])
     
     #Check 13: bframe >= 3
     if int(info['video']['Encoding settings']['bframes']) < 3:
-        is_a = False
-        errors.append(a + 'Bframes must be greater than or equal to 3. Got: ' + info['video']['Encoding settings']['bframes'])
+        error_a(code('bframes'), ' must be greater than or equal to 3.', info['video']['Encoding settings']['bframes'])
     
     deblock = int(info['video']['Encoding settings']['deblock'].split(':')[2])
     if is_animation:
         #Check 14: 0<=deblock<=2
         if deblock < 0 or deblock > 2:
-            is_a = False
-            errors.append(a + 'Deblock must be between 0 and 2. Got: ' + str(deblock))
+            error_a(code('deblock'), ' must be between 0 and 2.', deblock)
     else:
         #Check 14: -3<=deblock<=-1
         if deblock < -3 or deblock > -1:
-            is_a = False
-            errors.append(a + 'Deblock must be between -3 and -1. Got: ' + str(deblock))
+            error_a(code('deblock'), ' must be between -3 and -1.', deblock)
     
     #Check 15: me != dia or hex
     me = info['video']['Encoding settings']['me']
     if me == 'dia' or me == 'hex':
-        is_a = False
-        errors.append(a + 'Me must not be "dia" or "hex". Got: ' + me)
+        error_a(code('me'), ' must not be "dia" or "hex".', me)
     
     #Check 16: subme >= 7
     if int(info['video']['Encoding settings']['subme']) < 7:
-        is_a = False
-        errors.append(a + 'Subme must be greater than or equal to 7. Got: ' + info['video']['Encoding settings']['subme'])
+        error_a(code('subme'), ' must be greater than or equal to 7.', info['video']['Encoding settings']['subme'])
     
     #AWESOME!
     return (is_a and is_d, is_d, errors, warnings)
