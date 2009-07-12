@@ -83,38 +83,38 @@ def is_awesome(text, is_animation):
             #Check 6: 3<=ref<=6
             if ref < 3 or ref > 6:
                 is_d = False
-                errors.append(d + 'Reference frames not between 3 and 6. Got: ' + ref)
+                errors.append(d + 'Reference frames not between 3 and 6. Got: ' + str(ref))
         elif height <= 864:
             #Check 6: 3<=ref<=5
             if ref < 3 or ref > 5:
                 is_d = False
-                errors.append(d + 'Reference frames not between 3 and 5. Got: ' + ref)
+                errors.append(d + 'Reference frames not between 3 and 5. Got: ' + str(ref))
         else:
             #Check 6: 3<=ref<=4
             if ref < 3 or ref > 4:
                 is_d = False
-                errors.append(d + 'Reference frames not between 3 and 4. Got: ' + ref)
+                errors.append(d + 'Reference frames not between 3 and 4. Got: ' + str(ref))
     else:
         if height <= 540:
             #Check 6: 5<=ref<=12
             if ref < 5 or ref > 12:
                 is_d = False
-                errors.append(d + 'Reference frames not between 5 and 12. Got: ' + ref)
+                errors.append(d + 'Reference frames not between 5 and 12. Got: ' + str(ref))
         elif height <= 588:
             #Check 6: 5<=ref<=11
             if ref < 5 or ref > 11:
                 is_d = False
-                errors.append(d + 'Reference frames not between 5 and 11. Got: ' + ref)
+                errors.append(d + 'Reference frames not between 5 and 11. Got: ' + str(ref))
         elif height <= 648:
             #Check 6: 5<=ref<=10
             if ref < 5 or ref > 10:
                 is_d = False
-                errors.append(d + 'Reference frames not between 5 and 10. Got: ' + ref)
+                errors.append(d + 'Reference frames not between 5 and 10. Got: ' + str(ref))
         else:
             #Check 6: 5<=ref<=9
             if ref < 5 or ref > 9:
                 is_d = False
-                errors.append(d + 'Reference frames not between 5 and 9. Got: ' + ref)
+                errors.append(d + 'Reference frames not between 5 and 9. Got: ' + str(ref))
     
     #Check 5: cabac = 1
     if info['video']['Encoding settings']['cabac'] != '1':
