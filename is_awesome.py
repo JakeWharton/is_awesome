@@ -219,7 +219,7 @@ if is_post:
         (is_a, is_d, errors, warnings) = is_awesome(web.post['mediainfo'], 'is_animation' in web.post and web.post['is_animation'])
     except (ValueError, KeyError), e:
         is_a = is_d = False
-        errors = ul(li(strong('Fatal %s: ' % e.__type__.__name__), str(e)))
+        errors = ul(li(strong('Fatal %s: ' % type(e).__name__), str(e)))
         warnings = ul()
 else:
     is_a = is_d = False
