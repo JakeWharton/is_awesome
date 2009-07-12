@@ -208,14 +208,8 @@ if 'mediainfo' in web.post:
         dxva = div(h1('DXVA'), p('DirectX Video Acceleration (DXVA) is a Microsoft API specification for the Microsoft Windows and Xbox 360 platforms that allows video decoding to be hardware accelerated.'))
         awsm = div(h1('Awesome'), p('"Awesome" is a standard higher than DXVA. It is used to determine the highest quality encodes by certain individuals. If you are unaware of it, then you most likely do not need to concern yourself with its compliance.'))
         
-        if is_d:
-            dxva['class'] = 'good'
-        else:
-            dxva['class'] = 'bad'
-        if is_a:
-            awsm['class'] = 'good'
-        else:
-            awsm['class'] = 'bad'
+        dxva['class'] = is_d and 'good' or 'bad'
+        awsm['class'] = is_a and 'good' or 'bad'
         content += dxva
         content += awsm
         
