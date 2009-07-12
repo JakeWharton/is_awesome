@@ -29,6 +29,7 @@ def is_awesome(text, is_animation):
     
     is_a = True
     is_d = True
+    warnings = []
     errors = []
     
     a = str(strong('Awesome: '))
@@ -121,14 +122,20 @@ def is_awesome(text, is_animation):
         errors.append(a + 'Cabac must be 1. Got: ' + info['video']['Encoding settings']['cabac'])
     
     #Check 7: vbv_maxrate <= 50000
-    if int(info['video']['Encoding settings']['vbv_maxrate']) > 50000:
-        is_d = False
-        errors.append(d + 'vbv_maxrate must be less than or equal to 50,000. Got: ' + info['video']['Encoding settings']['vbv_maxrate'])
+    if 'vbv_maxrate' in info['video']['Encoding settings']:
+        if int(info['video']['Encoding settings']['vbv_maxrate']) > 50000:
+            is_d = False
+            errors.append(d + 'vbv_maxrate must be less than or equal to 50,000. Got: ' + info['video']['Encoding settings']['vbv_maxrate'])
+    else:
+        warnings.append('vbv_maxrate can not be determined. Assuming a value lower than 50,000.')
     
     #Check 8: vbv_bufsize <= 50000
-    if int(info['video']['Encoding settings']['vbv_bufsize']) > 50000:
-        is_d = False
-        errors.append(d + 'vbv_bufsize must be less than or equal to 50,000. Got: ' + info['video']['Encoding settings']['vbv_bufsize'])
+    if 'vbv_bufsize' in info['video']['Encoding settings']:
+        if int(info['video']['Encoding settings']['vbv_bufsize']) > 50000:
+            is_d = False
+            errors.append(d + 'vbv_bufsize must be less than or equal to 50,000. Got: ' + info['video']['Encoding settings']['vbv_bufsize'])
+    else:
+        warnings.append('vbv_bufsize can not be determined. Assuming a value lower than 50,000.')
     
     #Check 9: analyse = 0x3:0x113
     if info['video']['Encoding settings']['analyse'] != '0x3:0x113':
@@ -146,17 +153,13 @@ def is_awesome(text, is_animation):
         is_a = False
         errors.append(a + 'Me_range must be greater than or equal to 16. Got: ' + info['video']['Encoding settings']['me_range'])
     
-    if 'trellis' in info['video']['Encoding settings']:
-        #Check 12: trellis = 1 or 2
-        trellis = info['video']['Encoding settings']['trellis']
-        if trellis != '1' and trellis != 2:
+    #Check 12: trellis = 1 or 2
+    trellis = info['video']['Encoding settings']['trellis']
+    if trellis != '1' and trellis != 2:
+        deadzone = map(int, info['video']['Encoding settings']['deadzone'].split(','))
+        if deadzone[0] > 10 or deadzone[1] > 10:
             is_a = False
-            errors.append(a + 'Trellis must be 1 or 2. Got: ' + info['video']['Encoding settings']['trellis'])
-    else:
-        #Check 12: deadzone < 10
-        if int(info['video']['Encoding settings']['deadzone']) >= 10:
-            is_a = False
-            errors.append(a + 'Deadzone must be less than 10. Got: ' + info['video']['Encoding settings']['deadzone'])
+            errors.append(a + 'Trellis must be 1 or 2 or deadzone values need to be less than 10. Got: ' + info['video']['Encoding settings']['trellis'] + ' and ' + info['video']['Encoding settings']['deadzone'])
     
     #Check 13: bframe >= 3
     if int(info['video']['Encoding settings']['bframes']) < 3:
@@ -187,7 +190,7 @@ def is_awesome(text, is_animation):
         errors.append(a + 'Subme must be greater than or equal to 7. Got: ' + info['video']['Encoding settings']['subme'])
     
     #AWESOME!
-    return (is_a and is_d, is_d, errors)
+    return (is_a and is_d, is_d, errors, warnings)
 
 
 page = xhtmlpage('Is Awesome?')
@@ -203,7 +206,7 @@ footer += div('Designed and developed by ', a('Jake Wharton', href='http://jakew
 
 if 'mediainfo' in web.post:
     try:
-        is_a, is_d, errors = is_awesome(web.post['mediainfo'], 'is_animation' in web.post)
+        (is_a, is_d, errors, warnings) = is_awesome(web.post['mediainfo'], 'is_animation' in web.post)
         
         dxva = div(h1('DXVA'), p('DirectX Video Acceleration (DXVA) is a Microsoft API specification for the Microsoft Windows and Xbox 360 platforms that allows video decoding to be hardware accelerated.'))
         awsm = div(h1('Awesome'), p('"Awesome" is a standard higher than DXVA. It is used to determine the highest quality encodes by certain individuals. If you are unaware of it, then you most likely do not need to concern yourself with its compliance.'))
@@ -212,6 +215,12 @@ if 'mediainfo' in web.post:
         awsm['class'] = is_a and 'good' or 'bad'
         content += dxva
         content += awsm
+        
+        if len(warnings) > 0:
+            content += h3('Warnings')
+            e = content.add(ul())
+            for warning in warnings:
+                e += li(warning)
         
         if not is_a or not is_d:
             content += h3('Errors')
