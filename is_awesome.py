@@ -252,12 +252,9 @@ elif output == XHTML:
     page.html.head += link(rel='stylesheet', type='text/css', href='is_awesome.css')
     
     wrapper = page.html.body.add(div(id='wrapper'))
-    header  = wrapper.add(div(id='header'))
+    wrapper += div(h1(a('Is Awesome?', href='/')), id='header', __inline=True)
     content = wrapper.add(div(id='content'))
-    footer  = wrapper.add(div(id='footer'))
-    
-    header += h1(a('Is Awesome?', href='/'))
-    footer += div('Designed and developed by ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a('Source code', href='http://github.com/JakeWharton/is_awesome/'), '.')
+    wrapper += div('Designed and developed by ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a('Source code', href='http://github.com/JakeWharton/is_awesome/'), '.', __inline=True)
     
     if is_post:
         dxva = div(h1('DXVA'), p('DirectX Video Acceleration (DXVA) is a Microsoft API specification for the Microsoft Windows and Xbox 360 platforms that allows video decoding to be hardware accelerated.'))
@@ -276,16 +273,14 @@ elif output == XHTML:
             content += h3('Errors')
             content += errors
             
-        content += p(a('Try Again &raquo;', href='/'))
+        content += p(a('Try Again &raquo;', href='/'), __inline=True)
     else:
         content += p('The requirements for testing DXVA compliance are straight forward but tedious to check. The rules for "awesome"-ness are even more strict.')
-        content += p('Paste the text output of the ', a('MediaInfo', href='http://mediainfo.sf.net'), ' program below and press "Check".')
+        content += p('Paste the text output of the ', a('MediaInfo', href='http://mediainfo.sf.net'), ' program below and press "Check".', __inline=True)
         form = content.add(form(method='post', action=''))
         form += label('Is Animation?:', _for='is_animation')
-        form += input(type='checkbox', name='is_animation')
-        form += br()
-        form += textarea(name='mediainfo')
-        form += br()
+        form += input(type='checkbox', name='is_animation') + br()
+        form += textarea(name='mediainfo') + br()
         form += input(type='submit', name='submit', value='Check')
 
     #Google Analytics
