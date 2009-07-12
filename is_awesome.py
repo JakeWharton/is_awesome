@@ -254,7 +254,7 @@ elif output == XHTML:
     wrapper = page.html.body.add(div(id='wrapper'))
     wrapper += div(h1(a('Is Awesome?', href='/')), id='header', __inline=True)
     content = wrapper.add(div(id='content'))
-    wrapper += div('Designed and developed by ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a('Source code', href='http://github.com/JakeWharton/is_awesome/'), '.', __inline=True)
+    wrapper += div('Designed and developed by ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a('Source code', href='http://github.com/JakeWharton/is_awesome/'), '.', id='footer', __inline=True)
     
     if is_post:
         dxva = div(h1('DXVA'), p('DirectX Video Acceleration (DXVA) is a Microsoft API specification for the Microsoft Windows and Xbox 360 platforms that allows video decoding to be hardware accelerated.'))
