@@ -48,33 +48,40 @@ def is_awesome(text, is_animation):
         is_a = False
         errors += li(a, 'Not MPEG4/ISO/AVC (x264) codec. Got: ', info['video']['Codec ID'])
     
-    #Check 3: DTS or AC3 track
+    #Check 3: English DTS or AC3 track
     if 'audio' in info:
         a_codec = info['audio']['Format']
         if not a_codec == 'DTS' and not a_codec == 'AC3':
             is_a = False
             errors += li(a, 'Audio track not DTS or AC3. Got: ', info['audio']['Format'])
-    elif 'audio_#1' in info:
-        a_codec = info['audio_#1']['Format']
-        if not a_codec == 'DTS' and not a_codec == 'AC3':
-            is_a = False
-            errors += li(a, 'Audio track not DTS or AC3. Got: ', info['audio_#1']['Format'])
     else:
-        is_a = False
-        errors += li(a, 'No audio tracks.')
+        i = 1
+        while True:
+            if 'audio_#%i' % i not in info:
+                is_a = False
+                errors += li(a, 'Audio track not DTS or AC3. Got: ', info['audio_#1']['Format'])
+                break
+            else:
+                a_codec = info['audio_#%i' % i]['Format']
+                if (a_codec == 'DTS' or a_codec == 'AC3') and info['audio_#%s' % i]['Language'] == 'English':
+                    break
+            i += 1
     
     #Check 4: English subtitles
     if 'text' in info:
         if info['text']['Language'] != 'English':
             is_a = False
             errors += li(a, 'Subtitle track not English. Got: ', info['text']['Language'])
-    elif 'text_#1' in info:
-        if info['text_#1']['Language'] != 'English':
-            is_a = False
-            errors += li(a, 'No English subtitles. Got: ', info['text_#1']['Language'])
     else:
-        is_a = False
-        errors += li('No subtitle tracks.')
+        i = 1
+        while True:
+            if 'text_#%s' % i not in info:
+                is_a = False
+                errors += li(a, 'No English subtitles.')
+                break
+            elif info['text_#%s' % i]['Language'] == 'English':
+                break
+            i += 1
     
     height = int(info['video']['Height'].replace('pixels', '').replace(' ', '').strip())
     ref = int(info['video']['Encoding settings']['ref'])
