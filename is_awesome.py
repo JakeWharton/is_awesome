@@ -51,15 +51,18 @@ def is_awesome(text, is_animation):
     #Check 3: English DTS or AC3 track
     if 'audio' in info:
         a_codec = info['audio']['Format']
-        if not a_codec == 'DTS' and not a_codec == 'AC3':
+        if a_codec != 'DTS' and a_codec != 'AC3':
             is_a = False
             errors += li(a, 'Audio track not DTS or AC3. Got: ', info['audio']['Format'])
+        elif info['audio']['Language'] != 'English':
+            is_a = False
+            errors += li(a, 'Audio track not English. Got: ', info['audio']['Language'])
     else:
         i = 1
         while True:
             if 'audio_#%i' % i not in info:
                 is_a = False
-                errors += li(a, 'Audio track not DTS or AC3. Got: ', info['audio_#1']['Format'])
+                errors += li(a, 'No English DTS or AC3 audio tracks.')
                 break
             else:
                 a_codec = info['audio_#%i' % i]['Format']
@@ -77,7 +80,7 @@ def is_awesome(text, is_animation):
         while True:
             if 'text_#%s' % i not in info:
                 is_a = False
-                errors += li(a, 'No English subtitles.')
+                errors += li(a, 'No English subtitle tracks.')
                 break
             elif info['text_#%s' % i]['Language'] == 'English':
                 break
