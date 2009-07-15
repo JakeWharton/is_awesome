@@ -155,7 +155,7 @@ def is_awesome(text, is_animation):
     
     #Check 12: trellis = 1 or 2 or deadzone <= 10
     trellis = info['video']['Encoding settings']['trellis']
-    if trellis != '1' and trellis != 2:
+    if trellis != '1' and trellis != '2':
         deadzone = map(int, info['video']['Encoding settings']['deadzone'].split(','))
         if deadzone[0] > 10 or deadzone[1] > 10:
             is_a = False
