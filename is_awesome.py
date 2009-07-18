@@ -90,39 +90,39 @@ def is_awesome(text, is_animation):
     ref = int(info['video']['Encoding settings']['ref'])
     if is_1080p:
         if height <= 720:
-            #Check 6: 3<=ref<=6
-            if ref < 3 or ref > 6:
+            #Check 6: Reference frames between 3 and 6
+            if 3 <= ref <= 6:
                 is_d = False
                 errors += li(d, 'Reference frames not between 3 and 6. Got: ', ref)
         elif height <= 864:
-            #Check 6: 3<=ref<=5
-            if ref < 3 or ref > 5:
+            #Check 6: Reference frames between 3 and 5
+            if 3 <= ref <= 5:
                 is_d = False
                 errors += li(d, 'Reference frames not between 3 and 5. Got: ', ref)
         else:
-            #Check 6: 3<=ref<=4
-            if ref < 3 or ref > 4:
+            #Check 6: Reference frames between 3 and 4
+            if 3 <= ref <= 4:
                 is_d = False
                 errors += li(d, 'Reference frames not between 3 and 4. Got: ', ref)
     else:
         if height <= 540:
-            #Check 6: 5<=ref<=12
-            if ref < 5 or ref > 12:
+            #Check 6: Reference frames between 5 and 12
+            if 5 <= ref <= 12:
                 is_d = False
                 errors += li(d, 'Reference frames not between 5 and 12. Got: ', ref)
         elif height <= 588:
-            #Check 6: 5<=ref<=11
-            if ref < 5 or ref > 11:
+            #Check 6: Reference frames between 5 and 11
+            if 5 <= ref <= 11:
                 is_d = False
                 errors += li(d, 'Reference frames not between 5 and 11. Got: ', ref)
         elif height <= 648:
-            #Check 6: 5<=ref<=10
-            if ref < 5 or ref > 10:
+            #Check 6: Reference frames between 5 and 10
+            if 5 <= ref <= 10:
                 is_d = False
                 errors += li(d, 'Reference frames not between 5 and 10. Got: ', ref)
         else:
-            #Check 6: 5<=ref<=9
-            if ref < 5 or ref > 9:
+            #Check 6: Reference frames between 5 and 9
+            if 5 <= ref <= 9:
                 is_d = False
                 errors += li(d, 'Reference frames not between 5 and 9. Got: ', ref)
     
@@ -178,13 +178,13 @@ def is_awesome(text, is_animation):
     
     deblock = int(info['video']['Encoding settings']['deblock'].split(':')[2])
     if is_animation:
-        #Check 14: 0<=deblock<=2
-        if deblock < 0 or deblock > 2:
+        #Check 14: Deblock between 0 and 2
+        if 0 <= deblock <= 2:
             id_a = False
             errors += li(a, code('deblock'), ' must be between 0 and 2. Got: ', deblock)
     else:
-        #Check 14: -3<=deblock<=-1
-        if deblock < -3 or deblock > -1:
+        #Check 14: Deblock between -3 and -1
+        if -3 <= deblock <= -1:
             is_a = False
             errors += li(a, code('deblock'), ' must be between -3 and -1. Got: ', deblock)
     
