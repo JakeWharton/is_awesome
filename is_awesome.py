@@ -6,10 +6,10 @@ from vendor.pyy.xhtml11  import *
 import re
 
 def MediaInfo2Dict(text):
-    """
+    '''
     This method takes the text output from the program MediaInfo and parses it
     into a dictionary heirarchy.
-    """
+    '''
     import re
     rkeyval = re.compile(r'\s+:\s')
     res = {}
@@ -204,15 +204,15 @@ def is_awesome(text, is_animation):
 
 
 #Output types
-XHTML = 0
-JSON  = 1
-XML = 2
+XHTML = 1
+JSON  = 2
+XML   = 3
 
 #URL mapping
 urls = (
-    (r'^/$', XHTML),
+    (r'^/$'     , XHTML),
     (r'^/json/$', JSON),
-    (r'^/xml/$', XML),
+    (r'^/xml/$' , XML),
 )
 
 #Determine output format
@@ -229,7 +229,8 @@ if is_post:
         (is_a, is_d, errors, warnings) = is_awesome(web.post['mediainfo'], 'is_animation' in web.post and web.post['is_animation'])
     except (ValueError, KeyError), e:
         is_a = is_d = False
-        errors = ul(li(strong('Fatal %s: ' % type(e).__name__), str(e)))
+        import traceback
+        errors = ul(li(strong('Fatal %s: ' % type(e).__name__), pre(traceback.format_exc())))
         warnings = ul()
 else:
     is_a = is_d = False
