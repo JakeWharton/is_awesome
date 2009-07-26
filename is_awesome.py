@@ -14,11 +14,11 @@ def MediaInfo2Dict(text):
     rkeyval = re.compile(r'\s+:\s')
     res = {}
     
-    for category in text.replace('\r\n', '\n').strip().split('\n\n'):
+    for category in text.replace('\r\n', '\n').replace('\r', '\n').strip().split('\n\n'):
         pairs = map(str.strip, category.split('\n'))
         if pairs:
             name = pairs.pop(0).replace(' ', '_').lower()
-            res[name] = dict(rkeyval.split(pair, 2) for pair in pairs)
+            res[name] = dict(rkeyval.split(pair, 1) for pair in pairs)
     if 'video' in res and 'Encoding settings' in res['video']:
         res['video']['Encoding settings'] = dict(pair.split('=', 1) for pair in map(str.strip, filter(None, res['video']['Encoding settings'].split('/'))))
     return res
