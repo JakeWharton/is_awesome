@@ -137,7 +137,7 @@ def is_awesome(text, is_animation):
             is_d = False
             errors += li(d, code('vbv_maxrate'), ' must be less than or equal to 50,000. Got: ', info['video']['Encoding settings']['vbv_maxrate'])
     else:
-        warnings += li(code('vbv_maxrate'), ' can not be determined. Assuming a value lower than 50,000.')
+        warnings += li(d, code('vbv_maxrate'), ' can not be determined. Assuming a value lower than 50,000.')
     
     #Check 8: vbv_bufsize <= 50000
     if 'vbv_bufsize' in info['video']['Encoding settings']:
