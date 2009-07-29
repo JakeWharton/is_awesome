@@ -1,4 +1,4 @@
-#!/usr/bin/python vendor/pyy/cgi.py
+#!/home/jakewharton/bin/python vendor/pyy/pyy/cgi.py
 
 import sys
 sys.path.append('vendor/pyy')
@@ -301,7 +301,8 @@ def check_compliance(text, is_animation):
                     is_awesome |= FAIL
             
             #Check 14: deblock
-            row = tbdy.add(trrow(awesome, code('deblock'), lang.s_req_deblock_a if is_animation else lang.s_req_deblock_na))
+            deblock = lang.s_req_deblock_a if is_animation else lang.s_req_deblock_na
+            row = tbdy.add(trrow(awesome, code('deblock'), deblock))
             if 'deblock' not in encoding:
                 row += tdvalue(lang.s_missing, FAIL)
                 is_awesome |= FAIL
@@ -476,18 +477,20 @@ def check_compliance(text, is_animation):
 
 
 class AwesomeChecker(response):
-    def __init__(self):
-        self.is_post = 'mediainfo' in self.post
+    def __init__(self, title='Is Awesome?'):
+        response.__init__(self, title)
+        
+        self.is_post = 'mediainfo' in self.request.post
         if self.is_post:
-            self.is_animation = 'is_animation' in self.post
+            self.is_animation = 'is_animation' in self.request.post
             self.is_awesome, self.is_dxva, self.check_table = is_awesome(self.post['mediainfo'], is_animation)
 
 class XHTML(AwesomeChecker):
     def __init__(self):
-        response.__init__(self, 'Is Awesome?')
+        AwesomeChecker.__init__(self)
         
         #Import locale strings
-        locale = self.get['locale']
+        locale = self.request.get['locale']
         name   = 'languages.%s' % locale
         try:
             __import__(name)
