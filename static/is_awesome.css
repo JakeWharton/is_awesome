@@ -1,8 +1,9 @@
 .good { border: 1px solid #0f0; background-color: #bfb; }
 .bad { border: 1px solid #f00; background-color: #fbb; }
-.good, .bad { padding: .5em; margin: 2em; }
-.good h1, .bad h1 { text-align: center; margin: 0; font-size: 3em; padding: 0; }
-.good p, .bad p { margin: 1em 0 0; padding: 0; }
+.warn { }
+.good, .bad, .warn { padding: .5em; margin: 2em; }
+.good h1, .bad h1, .warn h1 { text-align: center; margin: 0; font-size: 3em; padding: 0; }
+.good p, .bad p, .warn p { margin: 1em 0 0; padding: 0; }
 
 body { margin: 0; padding: 1em; background-color: #aaa; text-align: center; font-family: sans-serif; }
 a:link, a:visited, a:active { color: #00f; }

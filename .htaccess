@@ -1,5 +1,6 @@
 RewriteEngine On
 RewriteBase /
 RewriteCond %{REQUEST_URI} !^/favicon.ico$
-RewriteCond %{REQUEST_URI} !^/is_awesome.css$
+RewriteCond %{REQUEST_URI} !^/static/
+RewriteRule ^/$ /en/ [R=301,L]
 RewriteRule ^(.*)$ is_awesome.py [L]
