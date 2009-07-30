@@ -60,7 +60,8 @@ awesome = 'Awesome'
 dxva    = 'DXVA'
 
 
-def check_compliance(text, is_animation):
+def check_compliance(text, is_animation, lang):
+    info = MediaInfo2Dict(text)
     is_awesome = is_dxva = PASS
     
     check_table  = table()
@@ -75,7 +76,7 @@ def check_compliance(text, is_animation):
         video = info[lang.s_video]
         
         #Check 1: 720p/1080p
-        row = tbdy.add(trrow(dxva, lang.s_att_resolution, lang.s_req_resolution))
+        row = tbdy.add(trrow(dxva, lang.s_att_resolution, ['1080p ', lang.s_or, ' 720p']))
         is_1080p = is_720p = False
         width  = int(video[lang.s_width ].replace(lang.s_pixels, '').replace(' ', '').strip())
         height = int(video[lang.s_height].replace(lang.s_pixels, '').replace(' ', '').strip())
@@ -85,10 +86,10 @@ def check_compliance(text, is_animation):
             #Wider than high (compared to 16:9), check width
             if width == 1920:
                 is_1080p = True
-                row += tdvalue(res)
-            if width == 1280:
+                row += tdvalue('1080p (%s)' % res)
+            elif width == 1280:
                 is_720p = True
-                row += tdvalue(res)
+                row += tdvalue('720p (%s)' % res)
             else:
                 row += tdvalue(res, FAIL)
                 is_dxva |= FAIL
@@ -96,16 +97,16 @@ def check_compliance(text, is_animation):
             #Taller than wide (compared to 16:9), check height
             if height == 1080:
                 is_1080p = True
-                row += tdvalue(res)
+                row += tdvalue('1080p (%s)' % res)
             elif height == 720:
                 is_720p = True
-                row += tdvalue(res)
+                row += tdvalue('720p (%s)' % res)
             else:
                 row += tdvalue(res, FAIL)
                 is_dxva |= FAIL
         
         #Check 2: is x264
-        row = tbdy.add(trrow(awesome, lang.s_att_vcodec, lang.s_req_vcodec))
+        row = tbdy.add(trrow(awesome, lang.s_att_vcodec, 'V_MPEG4/ISO/AVC (x264)'))
         if lang.s_codecid not in video:
             row += tdvalue(lang.s_missing, FAIL)
             is_awesome |= FAIL
@@ -194,7 +195,7 @@ def check_compliance(text, is_animation):
                     is_dxva |= FAIL
             
             #Check 7: vbv_maxrate <= 50000
-            row = tbdy.add(trrow(dxva, codec('vbv_maxrate'), lang.s_req_vbvmaxrate))
+            row = tbdy.add(trrow(dxva, code('vbv_maxrate'), lang.s_req_vbvmaxrate))
             if 'vbv_maxrate' not in encoding:
                 row += tdvalue(lang.s_missing, WARN)
                 is_dxva |= WARN
@@ -232,14 +233,14 @@ def check_compliance(text, is_animation):
                     row += tdvalue(analyse, FAIL)
                     is_dxva |= FAIL
             
-            #Check 10: rc = crf or 2-pass
-            row = tbdy.add(trrow(awesome, code('rc'), lang.s_req_rc))
+            #Check 10: rc = crf or 2pass
+            row = tbdy.add(trrow(awesome, code('rc'), ['"crf" ', lang.s_or, ' "2pass"']))
             if 'rc' not in encoding:
                 row += tdvalue(lang.s_missing, FAIL)
                 is_awesome |= FAIL
             else:
                 rc = encoding['rc']
-                if rc == 'crf' or rc == '2-pass':
+                if rc == 'crf' or rc == '2pass':
                     row += tdvalue(rc)
                 else:
                     row += tdvalue(rc, FAIL)
@@ -267,7 +268,7 @@ def check_compliance(text, is_animation):
                 if 'trellis' in encoding:
                     trellis = int(encoding['trellis'])
                     if 1 <= trellis <= 2:
-                        row += tdvalue([trellis, br(), lang.s_and, br(), lang.s_skipped])
+                        row += tdvalue([trellis, br(), em(lang.s_and), br(), lang.s_skipped])
                     else:
                         if 'deadzone' in encoding:
                             deadzone = tuple(map(int, encoding['deadzone'].split(',')))
@@ -318,7 +319,7 @@ def check_compliance(text, is_animation):
                     is_awesome |= FAIL
             
             #Check 15: me != dia or hex
-            row = tbdy.add(trrow(awesome, code('me'), lang.s_req_me))
+            row = tbdy.add(trrow(awesome, code('me'), lang.s_req_me % ('dia', 'hex')))
             if 'me' not in encoding:
                 row += tdvalue(lang.s_missing, FAIL)
                 is_awesome |= FAIL
@@ -362,7 +363,7 @@ def check_compliance(text, is_animation):
     if lang.s_audio in info:
         audio = info[lang.s_audio]
         
-        row = tbdy.add(trrow(awesome, lang.s_att_acodec, lang.s_req_acodec))
+        row = tbdy.add(trrow(awesome, lang.s_att_acodec, ['A_DTS ', lang.s_or, ' A_AC3']))
         if lang.s_codecid not in audio:
             row += tdvalue(lang.s_missing, FAIL)
             is_awesome |= FAIL
@@ -391,8 +392,6 @@ def check_compliance(text, is_animation):
             row += tdvalue(lang.s_missing, FAIL)
             is_awesome |= FAIL
         else:
-            row = tbdy.add(trrow(awesome, lang.s_att_acodec, lang.s_req_acodec))
-            
             i = 1
             codec_ids = []
             language_ids = []
@@ -417,7 +416,7 @@ def check_compliance(text, is_animation):
                 row  = tbdy.add(trrow(awesome, lang.s_att_audio, lang.s_req_aboth))
                 row += tdvalue(' ,'.join(valid))
             elif codec_ids and not language_ids:
-                row  = tbdy.add(trrow(awesome, lang.s_att_acodec, lang.s_req_acodec))
+                row  = tbdy.add(trrow(awesome, lang.s_att_acodec, ['A_DTS ', lang.s_or, ' A_AC3']))
                 #TODO: get codecs for codec_ids
                 row += tdvalue('TODO')
                 row  = tbdy.add(trrow(awesome, lang.s_att_alang, lang.s_req_alang))
@@ -476,42 +475,44 @@ def check_compliance(text, is_animation):
     return is_awesome, is_dxva, check_table
 
 
-class AwesomeChecker(response):
-    def __init__(self, title='Is Awesome?'):
-        response.__init__(self, title)
-        
-        self.is_post = 'mediainfo' in self.request.post
-        if self.is_post:
-            self.is_animation = 'is_animation' in self.request.post
-            self.is_awesome, self.is_dxva, self.check_table = is_awesome(self.post['mediainfo'], is_animation)
-
-class XHTML(AwesomeChecker):
-    def __init__(self):
-        AwesomeChecker.__init__(self)
+class AwesomeChecker(htmlpage):
+    def __init__(self, **kwargs):
+        htmlpage.__init__(self, **kwargs)
+        self.title = 'Is Awesome?'
         
         #Import locale strings
-        locale = self.request.get['locale']
-        name   = 'languages.%s' % locale
+        self.locale = self.request.get['locale']
+        name   = 'languages.%s' % self.locale
         try:
             __import__(name)
         except ImportError:
             self.error = True
-            return
-        lang = sys.modules[name]
+            name = 'languages.en_US'
+            __import__(name)
+        self.lang = sys.modules[name]
         
         #Copy equal string values
-        lang.s_req_vbvbufsize = lang.s_req_vbvmaxrate
-        lang.s_req_audio      = lang.s_req_video
-        lang.s_req_text       = lang.s_req_video
-        lang.s_req_tlang      = lang.s_req_alang
-        lang.s_content_2b    %= lang.s_check
+        self.lang.s_req_vbvbufsize = self.lang.s_req_vbvmaxrate
+        self.lang.s_req_audio      = self.lang.s_req_video
+        self.lang.s_req_text       = self.lang.s_req_video
+        self.lang.s_req_tlang      = self.lang.s_req_alang
+        self.lang.s_content_2b    %= self.lang.s_check
         
-        self.html.head += link(rel='stylesheet', type='text/css', href='static/is_awesome.css')
+        self.is_post = 'mediainfo' in self.request.post
+        if self.is_post:
+            self.is_animation = 'is_animation' in self.request.post
+            self.is_awesome, self.is_dxva, self.check_table = check_compliance(self.request.post['mediainfo'], self.is_animation, self.lang)
+
+class XHTML(AwesomeChecker):
+    def __init__(self, **kwargs):
+        AwesomeChecker.__init__(self, **kwargs)
+        
+        self.html.head += link(rel='stylesheet', type='text/css', href='/static/is_awesome.css')
         
         wrapper  = self.html.body.add(div(id='wrapper'))
         wrapper += div(h1(a('Is Awesome?', href='/')), id='header', __inline=True)
         content  = wrapper.add(div(id='content'))
-        wrapper += div(lang.s_designed, ' ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a(lang.s_source, href='http://github.com/JakeWharton/is_awesome/'), '.', id='footer', __inline=True)
+        wrapper += div(self.lang.s_designed, ' ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a(self.lang.s_source, href='http://github.com/JakeWharton/is_awesome/'), '.', id='footer', __inline=True)
         
         #Google Analytics
         self.html += script('''
@@ -525,20 +526,22 @@ pageTracker._trackPageview();
 } catch(err) {}
 ''', type='text/javascript')
         
-        if is_post:
-            content += div(h1(dxva), p(lang.s_dxva_desc), _class='compliance %s' % get_status_class(self.is_dxva))
-            content += div(h1(awsm), p(lang.s_awesome_desc), _class='compliance %s' % get_status_class(self.is_awesome))
+        if self.is_post:
+            content += div(h1('DXVA'), p(self.lang.s_dxva_desc), _class='compliance %s' % get_status_class(self.is_dxva))
+            content += div(h1('Awesome'), p(self.lang.s_awesome_desc), _class='compliance %s' % get_status_class(self.is_awesome))
             content += self.check_table
-                
-            content += p(a('% &raquo;' % lang.s_tryagain, href='/%s/' % locale), __inline=True)
+            
+            content += p(a(self.lang.s_tryagain, ' &raquo;', href='/%s/' % self.locale), __inline=True)
         else:
-            content += p(lang.s_content_1)
-            content += p(lang.s_content_2a, ' ', a('MediaInfo', href='http://mediainfo.sf.net'), ' ', lang.s_content_2b, __inline=True)
-            form = content.add(form(method='post', action=''))
-            form += label(lang.s_isanim, ':', _for='is_animation')
-            form += input(type='checkbox', name='is_animation') + br()
-            form += textarea(name='mediainfo') + br()
-            form += input(type='submit', name='submit', value=lang.s_check)
+            content += p(self.lang.s_content_1)
+            content += p(self.lang.s_content_2a, ' ', a('MediaInfo', href='http://mediainfo.sf.net'), ' ', self.lang.s_content_2b, __inline=True)
+            frm  = content.add(form(method='post', action=''))
+            frm += label(self.lang.s_is_anim, ':', _for='is_animation')
+            frm += input_(type='checkbox', name='is_animation')
+            frm += br()
+            frm += textarea(name='mediainfo')
+            frm += br()
+            frm += input_(type='submit', name='submit', value=self.lang.s_check)
 
 
 class JSON(AwesomeChecker):
@@ -580,4 +583,4 @@ urls = (
     (r'^/xml/$', XML),
 )
 
-print resolve(urls, request.read()).render()
+print resolve(urls).render()
