@@ -64,7 +64,7 @@ def check_compliance(text, is_animation, lang):
     info = MediaInfo2Dict(text)
     is_awesome = is_dxva = PASS
     
-    check_table  = table()
+    check_table  = table(cellspacing=0)
     check_table += thead(tr(th(lang.s_compliance), th(lang.s_attribute), th(lang.s_requirement), th(lang.s_value)))
     tbdy         = check_table.add(tbody())
     
