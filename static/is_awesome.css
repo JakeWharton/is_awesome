@@ -28,6 +28,6 @@ a:hover { color: #44f; }
 #content p { margin-top: 0; }
 #footer { padding: 1em; background-color: #eee; font-size: .75em; }
 #footer ul { text-align: right; list-style: none; margin: 0; padding: 0; }
-#footer ul li { float: left; }
+#footer ul li { float: left; margin-right: .25em; }
 #footer ul li a img { border: 0; }
 #footer div { text-align: right; }
