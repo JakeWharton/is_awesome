@@ -1,6 +1,6 @@
 #!/home/jakewharton/bin/python vendor/pyy/pyy/cgi.py
 
-import sys
+import sys, os
 sys.path.append('vendor/pyy')
 
 from pyy.request      import request
@@ -265,16 +265,16 @@ def check_compliance(text, is_animation, lang):
                         is_awesome |= FAIL
             
             #Check 13: bframe >= 3
-            row = tbdy.add(trrow(awesome, code('bframe'), lang.s_req_bframe))
-            if 'bframe' not in encoding:
+            row = tbdy.add(trrow(awesome, code('bframes'), lang.s_req_bframe))
+            if 'bframes' not in encoding:
                 row += tdvalue(lang.s_missing, FAIL)
                 is_awesome |= FAIL
             else:
-                bframe = int(encoding['bframe'])
-                if bframe >= 3:
-                    row += tdvalue(bframe)
+                bframes = int(encoding['bframes'])
+                if bframes >= 3:
+                    row += tdvalue(bframes)
                 else:
-                    row += tdvalue(bframe, FAIL)
+                    row += tdvalue(bframes, FAIL)
                     is_awesome |= FAIL
             
             #Check 14: deblock
@@ -488,7 +488,13 @@ class XHTML(AwesomeChecker):
         wrapper  = self.html.body.add(div(id='wrapper'))
         wrapper += div(h1(a('Is Awesome?', href='/')), id='header', __inline=True)
         content  = wrapper.add(div(id='content'))
-        wrapper += div(self.lang.s_designed, ' ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a(self.lang.s_source, href='http://github.com/JakeWharton/is_awesome/'), '.', id='footer', __inline=True)
+        footer   = wrapper.add(div(id='footer'))
+        langs    = footer.add(ul(id='langs'))
+        for name in filter(lambda x: x.endswith('.py'), os.listdir('./languages/')):
+            if name != '__init__.py':
+               name = name[:-3]
+               langs += li(a(img(src='/static/%s.png' % name, alt=name), href='/%s/' % name))
+        footer  += div(self.lang.s_designed, ' ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a(self.lang.s_source, href='http://github.com/JakeWharton/is_awesome/'), '.', id='about', __inline=True)
         
         #Google Analytics
         self.html += script('''
@@ -507,7 +513,7 @@ pageTracker._trackPageview();
             content += div(h1('Awesome'), p(self.lang.s_awesome_desc), _class='compliance %s' % get_status_class(self.is_awesome))
             content += self.check_table
             
-            content += p(a(self.lang.s_tryagain, ' &raquo;', href='/%s/' % self.locale), __inline=True)
+            content += div(a(self.lang.s_tryagain, ' &raquo;', href='/%s/' % self.locale), __inline=True)
         else:
             content += p(self.lang.s_content_1)
             content += p(self.lang.s_content_2a, ' ', a('MediaInfo', href='http://mediainfo.sf.net'), ' ', self.lang.s_content_2b, __inline=True)
