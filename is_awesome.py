@@ -18,12 +18,16 @@ def MediaInfo2Dict(text, video='Video', encoding_settings='Encoding settings'):
     into a dictionary heirarchy.
     '''
     import re
-    rkeyval = re.compile(r'\s+:\s')
+    rkeyval   = re.compile(r'\s+:\s')
+    rnewline1 = re.compile('\r|\n')
+    rnewline2 = re.compile('\r{2}|\n{2}')
+    
+    text = text.replace('\r\n', '\n').strip()
     d = {}
     
     #TODO: come up with a better newline solution than this
-    for category in text.replace('\r\n', '\n').replace('\r', '\n').strip().split('\n\n'):
-        pairs = map(str.strip, category.split('\n'))
+    for category in rnewline2.split(text):
+        pairs = map(str.strip, rnewline1.split(category))
         if pairs:
             name = pairs.pop(0)
             d[name] = dict(rkeyval.split(pair, 1) for pair in pairs)
@@ -76,12 +80,18 @@ def check_compliance(text, is_animation, lang):
         video = info[lang.s_video]
         
         #Check 1: 720p/1080p
-        row = tbdy.add(trrow(dxva, lang.s_att_resolution, ['1080p ', lang.s_or, ' 720p']))
         is_1080p = is_720p = False
+        row    = tbdy.add(trrow(dxva, lang.s_att_resolution, ['1080p ', lang.s_or, ' 720p']))
         width  = int(video[lang.s_width ].replace(lang.s_pixels, '').replace(' ', '').strip())
         height = int(video[lang.s_height].replace(lang.s_pixels, '').replace(' ', '').strip())
-        dar    = float(video[lang.s_dar])
         res    = '%sx%s' % (width, height)
+        
+        dar = video[lang.s_dar]
+        if ':' in dar:
+            dar = reduce(lambda x,y: x/y, map(float, dar.split(':')))
+        else:
+            dar = float(dar)
+        
         if dar >= (16.0/9.0):
             #Wider than high (compared to 16:9), check width
             if width == 1920:
