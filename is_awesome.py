@@ -259,9 +259,9 @@ def check_compliance(text, is_animation, lang):
                         if 'deadzone' in encoding:
                             deadzone = tuple(map(int, encoding['deadzone'].split(',')))
                             if deadzone <= (10,10):
-                                row += tdvalue([trellis, br(), lang.s_and, br(), deadzone])
+                                row += tdvalue([trellis, br(), lang.s_and, br(), encoding['deadzone']])
                             else:
-                                row += tdvalue([trellis, br(), lang.s_and, br(), deadzone], FAIL)
+                                row += tdvalue([trellis, br(), lang.s_and, br(), encoding['deadzone']], FAIL)
                                 is_awesome |= FAIL
                         else:
                             row += tdvalue([trellis, br(), lang.s_and, br(), lang.s_missing.lower()], FAIL)
@@ -269,9 +269,9 @@ def check_compliance(text, is_animation, lang):
                 else: #if 'trellis' not in encoding ('deadzone' in encoding)
                     deadzone = tuple(map(int, encoding['deadzone'].split(',')))
                     if deadzone <= (10,10):
-                        row += tdvalue([lang.s_missing, br(), lang.s_and, br(), deadzone])
+                        row += tdvalue([lang.s_missing, br(), lang.s_and, br(), encoding['deadzone']])
                     else:
-                        row += tdvalue([lang.s_missing, br(), lang.s_and, br(), deadzone], FAIL)
+                        row += tdvalue([lang.s_missing, br(), lang.s_and, br(), encoding['deadzone']], FAIL)
                         is_awesome |= FAIL
             
             #Check 13: bframe >= 3
