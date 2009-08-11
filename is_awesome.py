@@ -360,66 +360,29 @@ def check_compliance(text, is_animation, lang):
             else:
                 row += tdvalue(acodec, FAIL)
                 is_awesome |= FAIL
-        
-        row = tbdy.add(trrow(awesome, lang.s_att_alang, lang.s_req_alang))
-        if lang.s_language not in audio:
-            row += tdvalue(lang.s_missing, FAIL)
-            is_awesome |= FAIL
-        else:
-            alang = audio[lang.s_language]
-            if alang == lang.s_english:
-                row += tdvalue(alang)
-            else:
-                row += tdvalue(alang, FAIL)
-                is_awesome |= FAIL
     else: #if lang.s_audio not in info
         if lang.s_audio_n % 1 not in info:
             row  = tbdy.add(trrow(awesome, lang.s_att_audio, lang.s_req_audio))
             row += tdvalue(lang.s_missing, FAIL)
             is_awesome |= FAIL
         else:
+            row = tbdy.add(trrow(awesome, lang.s_att_acodec, ['A_DTS ', lang.s_or, ' A_AC3']))
             i = 1
             codec_ids = []
             language_ids = []
             while True:
                 if lang.s_audio_n % i not in info:
+                    row += tdvalue(lang.s_missing, FAIL)
+                    is_awesome |= FAIL
                     break
                 
                 audio = info[lang.s_audio_n % i]
                 if lang.s_codecid in audio and (audio[lang.s_codecid] == 'A_DTS' or audio[lang.s_codecid] == 'A_AC3'):
-                    codec_ids.append(i)
-                if lang.s_language in audio and audio[lang.s_language] == s.english:
-                    language_ids.append(i)
+                    row += tdvalue(audio[lang.s_codecid])
+                    break
                 
                 i += 1
-            
-            union = set(codec_ids) & set(language_ids)
-            if union:
-                valid = []
-                for id in union:
-                    valid_id = union[0]
-                    valid.append(audio[lang.s_audio_n % valid_id][lang.s_codecid][2:] + ' ' + audio[lang.s_audio_n % valid_id][lang.s_language])
-                row  = tbdy.add(trrow(awesome, lang.s_att_audio, lang.s_req_aboth))
-                row += tdvalue(' ,'.join(valid))
-            elif codec_ids and not language_ids:
-                row  = tbdy.add(trrow(awesome, lang.s_att_acodec, ['A_DTS ', lang.s_or, ' A_AC3']))
-                #TODO: get codecs for codec_ids
-                row += tdvalue('TODO')
-                row  = tbdy.add(trrow(awesome, lang.s_att_alang, lang.s_req_alang))
-                #TODO: if all language values for codec_ids are missing then WARN, otherwise FAIL
-                row += tdvalue('Multiple', WARN)
-                is_awesome |= WARN
-            elif language_ids and not codec_ids:
-                row  = tbdy.add(trrow(awesome, lang.s_att_acodec, lang.s_req_acodec))
-                row += tdvalue('Not DTS or AC3', FAIL)
-                row  = tbdy.add(trrow(awesome, lang.s_att_alang, lang.s_req_alang))
-                row += tdvalue(lang.s_english)
-                is_awesome |= FAIL
-            else:
-                row  = tbdy.add(trrow(awesome, lang.s_att_audio, lang.s_req_both))
-                #TODO: lookup codec/language pairs
-                row += tdvalue('Multiple', FAIL)
-                is_awesome |= FAIL
+    
     
     ######################
     ### SUBTITLE TESTS ###
