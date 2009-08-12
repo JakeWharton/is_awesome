@@ -448,9 +448,14 @@ class AwesomeChecker(htmlpage):
         self.lang.s_content_2b    %= self.lang.s_check
         
         self.is_post = 'mediainfo' in self.request.post
+        self.error   = None
         if self.is_post:
             self.is_animation = 'is_animation' in self.request.post
-            self.is_awesome, self.is_dxva, self.check_table = check_compliance(self.request.post['mediainfo'], self.is_animation, self.lang)
+            try:
+                self.is_awesome, self.is_dxva, self.check_table = check_compliance(self.request.post['mediainfo'], self.is_animation, self.lang)
+            except StandardError, e:
+                import traceback
+                self.error = traceback.format_exc()
 
 class XHTML(AwesomeChecker):
     def __init__(self, **kwargs):
@@ -481,7 +486,12 @@ pageTracker._trackPageview();
 } catch(err) {}
 ''', type='text/javascript')
         
-        if self.is_post:
+        if self.error:
+            content += h1('An Error Has Occured')
+            content += p('A fatal error has occured processing your request.')
+            content += p(pre(self.error))
+            content += p('Please post the above traceback along with your MediaInfo input ', a('here', href='https://awesome-hd.com/forums.php?action=viewthread&threadid=508'), '.' )
+        elif self.is_post:
             content += div(h1('DXVA'), p(self.lang.s_dxva_desc), _class='compliance %s' % get_status_class(self.is_dxva))
             content += div(h1('Awesome'), p(self.lang.s_awesome_desc), _class='compliance %s' % get_status_class(self.is_awesome))
             content += self.check_table
