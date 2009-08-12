@@ -18,7 +18,7 @@ def MediaInfo2Dict(text, video='Video', encoding_settings='Encoding settings'):
     into a dictionary heirarchy.
     '''
     import re
-    rkeyval   = re.compile(r'\s+:\s')
+    rkeyval   = re.compile(r'\s*:\s')
     rnewline1 = re.compile('\r|\n')
     rnewline2 = re.compile('\r{2}|\n{2}')
     
