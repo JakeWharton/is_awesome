@@ -444,6 +444,7 @@ class AwesomeChecker(htmlpage):
         self.lang.s_req_vbvbufsize = self.lang.s_req_vbvmaxrate
         self.lang.s_req_audio      = self.lang.s_req_video
         self.lang.s_req_text       = self.lang.s_req_video
+        self.lang.s_req_encoding   = self.lang.s_req_video
         self.lang.s_req_tlang      = self.lang.s_req_alang
         self.lang.s_content_2b    %= self.lang.s_check
         
