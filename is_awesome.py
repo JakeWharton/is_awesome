@@ -87,8 +87,8 @@ def check_compliance(text, is_animation, lang):
         res    = '%sx%s' % (width, height)
         
         dar = video[lang.s_dar]
-        if ':' in dar:
-            dar = reduce(lambda x,y: x/y, map(float, dar.split(':')))
+        if ':' in dar or '/' in dar:
+            dar = reduce(lambda x,y: x/y, map(float, dar.split(':' if ':' in dar else '/' )))
         else:
             dar = float(dar)
         
