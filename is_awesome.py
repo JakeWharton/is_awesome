@@ -509,42 +509,42 @@ pageTracker._trackPageview();
             frm += input_(type='submit', name='submit', value=self.lang.s_check)
 
 
-class JSON(AwesomeChecker):
-    def render(self):
-        print 'Content-type: application/json'
-        print
-        if self.is_post:
-            print '{"dxva": %s, "awesome": %s, "error_count": %s, "errors": "%s", "warning_count": %s, "warnings": "%s"}' % (is_d and 'true' or 'false', is_a and 'true' or 'false', len(errors.children), str(errors), len(warnings.children), str(warnings))
-        else:
-            print '{}'
+#class JSON(AwesomeChecker):
+#    def render(self):
+#        print 'Content-type: application/json'
+#        print
+#        if self.is_post:
+#            print '{"dxva": %s, "awesome": %s, "error_count": %s, "errors": "%s", "warning_count": %s, "warnings": "%s"}' % (is_d and 'true' or 'false', is_a and 'true' or 'false', len(errors.children), str(errors), len(warnings.children), str(warnings))
+#        else:
+#            print '{}'
 
-class XML(AwesomeChecker):
-    def render(self):
-        print 'Content-type: application/xml'
-        print
-        print '<?xml version="1.0" encoding="UTF-8"?>'
-        print
-        if self.is_post:
-            print '<compliant dxva="%s" awesome="%s">' % (is_d and 'true' or 'false', is_a and 'true' or 'false')
-            if len(errors.children) > 0:
-                print '\t<errors count="%s">%s\n\t</errors>' % (len(errors.children), errors.render_children(2, True))
-            else:
-                print '\t<errors count="0"/>'
-            if len(warnings.children) > 0:
-                print '\t<warnings count="%s">%s\n\t</warnings>' % (len(warnings.children), warnings.render_children(2, True))
-            else:
-                print '\t<warnings count="0"/>'
-            print '</compliant>'
-        else:
-            print '<compliant />'
+#class XML(AwesomeChecker):
+#    def render(self):
+#        print 'Content-type: application/xml'
+#        print
+#        print '<?xml version="1.0" encoding="UTF-8"?>'
+#        print
+#        if self.is_post:
+#            print '<compliant dxva="%s" awesome="%s">' % (is_d and 'true' or 'false', is_a and 'true' or 'false')
+#            if len(errors.children) > 0:
+#                print '\t<errors count="%s">%s\n\t</errors>' % (len(errors.children), errors.render_children(2, True))
+#            else:
+#                print '\t<errors count="0"/>'
+#            if len(warnings.children) > 0:
+#                print '\t<warnings count="%s">%s\n\t</warnings>' % (len(warnings.children), warnings.render_children(2, True))
+#            else:
+#                print '\t<warnings count="0"/>'
+#            print '</compliant>'
+#        else:
+#            print '<compliant />'
 
 
 
 
 urls = (
     (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/$', XHTML),
-    (r'^/json/$', JSON),
-    (r'^/xml/$', XML),
+    #(r'^/json/$', JSON),
+    #(r'^/xml/$', XML),
 )
 
 print resolve(urls)
