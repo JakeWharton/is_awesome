@@ -57,7 +57,7 @@ def tdvalue(value, status=PASS):
     return v
 
 def trrow(test, attribute, requirement):
-    return tr(td(test), td(attribute), td(requirement))
+    return tr(td(test), td(attribute), td(requirement), __inline=True)
 
 
 awesome = 'Awesome'
@@ -69,7 +69,7 @@ def check_compliance(text, is_animation, lang):
     is_awesome = is_dxva = PASS
     
     check_table  = table(cellspacing=0)
-    check_table += thead(tr(th(lang.s_compliance), th(lang.s_attribute), th(lang.s_requirement), th(lang.s_value)))
+    check_table += thead(tr(th(lang.s_compliance), th(lang.s_attribute), th(lang.s_requirement), th(lang.s_value), __inline=True ))
     tbdy         = check_table.add(tbody())
     
     ###################
@@ -469,18 +469,17 @@ class XHTML(AwesomeChecker):
         content  = wrapper.add(div(id='content'))
         footer   = wrapper.add(div(id='footer'))
         langs    = footer.add(ul(id='langs'))
-        for name in filter(lambda x: x.endswith('.py'), os.listdir('./languages/')):
-            if name != '__init__.py':
-               name = name[:-3]
-               langs += li(a(img(src='/static/%s.png' % name, alt=name), href='/%s/' % name))
+        for name in filter(lambda x: x.endswith('.py') and x[0] != '_', os.listdir('./languages/')):
+            name = name[:-3]
+            langs += li(a(img(src='/static/%s.png' % name, alt=name), href='/%s/' % name), __inline=True)
         footer  += div(self.lang.s_designed, ' ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a(self.lang.s_source, href='http://github.com/JakeWharton/is_awesome/'), '.', id='about', __inline=True)
         
         #Google Analytics
-        self.html += script('''
+        self.html.body += script('''
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 ''', type='text/javascript')
-        self.html += script('''
+        self.html.body += script('''
 try {
 var pageTracker = _gat._getTracker("UA-3637749-9");
 pageTracker._trackPageview();
@@ -542,11 +541,10 @@ class XML(AwesomeChecker):
 
 
 
-#URL mapping
 urls = (
     (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/$', XHTML),
     (r'^/json/$', JSON),
     (r'^/xml/$', XML),
 )
 
-print resolve(urls).render()
+print resolve(urls)
