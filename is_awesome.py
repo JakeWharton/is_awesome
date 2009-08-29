@@ -512,41 +512,38 @@ pageTracker._trackPageview();
 
 class JSON(AwesomeChecker):
     def render(self):
-        print 'Content-type: application/json'
-        print
+        r = 'Content-type: application/json\n\n'
         if self.is_post:
             checks = ', '.join('"%s": {"compliance": "%s", "attribute": "%s", "requirement": "%s", "value": "%s", "level": "%s"}' % (check[0], check[1], check[2], check[3].replace('"', r'\"'), check[4], get_status_class(check[5])) for check in self.check_table)
-            return '{"dxva": "%s", "awesome": "%s", "checks": {%s}}' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome), checks)
+            r += '{"dxva": "%s", "awesome": "%s", "checks": {%s}}' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome), checks)
         else:
-            return '{}'
+            r += '{}'
+        return r
 
-#class XML(AwesomeChecker):
-#    def render(self):
-#        print 'Content-type: application/xml'
-#        print
-#        print '<?xml version="1.0" encoding="UTF-8"?>'
-#        print
-#        if self.is_post:
-#            print '<compliant dxva="%s" awesome="%s">' % (is_d and 'true' or 'false', is_a and 'true' or 'false')
-#            if len(errors.children) > 0:
-#                print '\t<errors count="%s">%s\n\t</errors>' % (len(errors.children), errors.render_children(2, True))
-#            else:
-#                print '\t<errors count="0"/>'
-#            if len(warnings.children) > 0:
-#                print '\t<warnings count="%s">%s\n\t</warnings>' % (len(warnings.children), warnings.render_children(2, True))
-#            else:
-#                print '\t<warnings count="0"/>'
-#            print '</compliant>'
-#        else:
-#            print '<compliant />'
-
+class XML(AwesomeChecker):
+    def render(self):
+        r =  'Content-type: application/xml\n\n<?xml version="1.0" encoding="UTF-8"?>\n\n'
+        if self.is_post:
+            r += '<compliant dxva="%s" awesome="%s">\n' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome))
+            for check in self.check_table:
+                r += '  <check id="%s">\n' % check[0]
+                r += '    <compliance>%s</compliance>\n' % check[1]
+                r += '    <attribute>%s</attribute>\n' % check[2]
+                r += '    <requirement>%s</requirement>\n' % check[3]
+                r += '    <value>%s</value>\n' % check[4]
+                r += '    <level>%s</level>\n' % get_status_class(check[5])
+                r += '  </check>\n'
+            r += '</compliant>'
+        else:
+            r += '<compliant />'
+        return r
 
 
 
 urls = (
     (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/$'     , XHTML),
     (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/json/$', JSON ),
-    #(r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/xml/$' , XML  ),
+    (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/xml/$' , XML  ),
 )
 
 print resolve(urls)
