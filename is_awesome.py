@@ -150,36 +150,33 @@ def check_compliance(text, is_animation, lang):
                     is_awesome |= FAIL
             
             #Check 6: Reference frames
-            refs = [
-                [(540, 12), (588, 11), (648, 10), (720, 9)], #720p
-                [(720, 6) , (864, 5) , (1080, 4)          ], #1080p
-            ]
-            ref_low  = 3 if is_1080p else 5
-            ref_high = '?'
-            for allowed_height, allowed_ref_high in refs[int(is_1080p)]:
-                if height <= allowed_height:
-                    ref_high = allowed_ref_high
-                    break
-            
-            row = tbdy.add(trrow(dxva, lang.s_att_ref, lang.s_req_ref % (ref_low, ref_high)))
-            if 'ref' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
-                is_dxva |= FAIL
-            elif 'ref_high' not in locals():
-                row += tdvalue(lang.s_invalidh, FAIL)
+            if not is_1080p and not is_720p:
+                row = tbdy.add(trrow(dxva, lang.s_att_ref, lang.s_req_ref % ('?', '?')))
+                row += tdvalue(lang.s_invalidres, FAIL)
                 is_dxva |= FAIL
             else:
-                ref = int(encoding['ref'])
+                refs = [
+                    [(540, 12), (588, 11), (648, 10), (720, 9)], #720p
+                    [(720, 6) , (864, 5) , (1080, 4)          ], #1080p
+                ]
+                ref_low = 3 if is_1080p else 5
+                for allowed_height, allowed_ref_high in refs[int(is_1080p)]:
+                    if height <= allowed_height:
+                        ref_high = allowed_ref_high
+                        break
                 
-                if not is_1080p and not is_720p:
-                    row += tdvalue(lang.s_invalidres, FAIL)
+                row = tbdy.add(trrow(dxva, lang.s_att_ref, lang.s_req_ref % (ref_low, ref_high)))
+                if 'ref' not in encoding:
+                    row += tdvalue(lang.s_missing, FAIL)
                     is_dxva |= FAIL
-                else: #is_1080p or is_720p
-                  if ref_low <= ref <= ref_high:
-                      row += tdvalue(ref)
-                  else:
-                      row += tdvalue(ref, FAIL)
-                      is_dxva |= FAIL
+                else:
+                    ref = int(encoding['ref'])
+                    
+                    if ref_low <= ref <= ref_high:
+                        row += tdvalue(ref)
+                    else:
+                        row += tdvalue(ref, FAIL)
+                        is_dxva |= FAIL
             
             #Check 7: vbv_maxrate <= 50000
             row = tbdy.add(trrow(dxva, code('vbv_maxrate'), lang.s_req_vbvmaxrate))
