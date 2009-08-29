@@ -445,6 +445,13 @@ class AwesomeChecker(htmlpage):
                 import traceback
                 self.error = traceback.format_exc()
 
+def get_status_class(status):
+    if status >= FAIL:
+        return 'fail'
+    if status == WARN:
+        return 'warn'
+    return 'pass'
+            
 class XHTML(AwesomeChecker):
     def __init__(self, **kwargs):
         AwesomeChecker.__init__(self, **kwargs)
@@ -479,13 +486,6 @@ pageTracker._trackPageview();
             content += p(pre(self.error))
             content += p('Please post the above traceback along with your MediaInfo input ', a('here', href='https://awesome-hd.com/forums.php?action=viewthread&threadid=508'), '.' )
         elif self.is_post:
-            def get_status_class(status):
-                if status >= FAIL:
-                    return 'fail'
-                if status == WARN:
-                    return 'warn'
-                return 'pass'
-            
             content += div(h1('DXVA'), p(self.lang.s_dxva_desc), _class='compliance %s' % get_status_class(self.is_dxva))
             content += div(h1('Awesome'), p(self.lang.s_awesome_desc), _class='compliance %s' % get_status_class(self.is_awesome))
             
@@ -510,14 +510,15 @@ pageTracker._trackPageview();
             frm += _input(type='submit', name='submit', value=self.lang.s_check)
 
 
-#class JSON(AwesomeChecker):
-#    def render(self):
-#        print 'Content-type: application/json'
-#        print
-#        if self.is_post:
-#            print '{"dxva": %s, "awesome": %s, "error_count": %s, "errors": "%s", "warning_count": %s, "warnings": "%s"}' % (is_d and 'true' or 'false', is_a and 'true' or 'false', len(errors.children), str(errors), len(warnings.children), str(warnings))
-#        else:
-#            print '{}'
+class JSON(AwesomeChecker):
+    def render(self):
+        print 'Content-type: application/json'
+        print
+        if self.is_post:
+            checks = ', '.join('"%s": {"compliance": "%s", "attribute": "%s", "requirement": "%s", "value": "%s", "level": "%s"}' % (check[0], check[1], check[2], check[3].replace('"', r'\"'), check[4], get_status_class(check[5])) for check in self.check_table)
+            return '{"dxva": "%s", "awesome": "%s", "checks": {%s}}' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome), checks)
+        else:
+            return '{}'
 
 #class XML(AwesomeChecker):
 #    def render(self):
@@ -543,9 +544,9 @@ pageTracker._trackPageview();
 
 
 urls = (
-    (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/$', XHTML),
-    #(r'^/json/$', JSON),
-    #(r'^/xml/$', XML),
+    (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/$'     , XHTML),
+    (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/json/$', JSON ),
+    #(r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/xml/$' , XML  ),
 )
 
 print resolve(urls)
