@@ -336,7 +336,7 @@ def check_compliance(text, is_animation, lang):
     if lang.s_audio in info:
         audio = info[lang.s_audio]
         
-        row = [0, awesome, lang.s_att_acodec, ''.join(['A_DTS ', lang.s_or, ' A_AC3'])]
+        row = [3, awesome, lang.s_att_acodec, ''.join(['A_DTS ', lang.s_or, ' A_AC3'])]
         if lang.s_codecid not in audio:
             row += [lang.s_missing, FAIL]
             is_awesome |= FAIL
@@ -349,10 +349,10 @@ def check_compliance(text, is_animation, lang):
                 is_awesome |= FAIL
     else: #if lang.s_audio not in info
         if lang.s_audio_n % 1 not in info:
-            row  = [0, awesome, lang.s_att_audio, lang.s_req_audio, lang.s_missing, FAIL]
+            row = [3, awesome, lang.s_att_audio, lang.s_req_audio, lang.s_missing, FAIL]
             is_awesome |= FAIL
         else:
-            row = [0, awesome, lang.s_att_acodec, ''.join(['A_DTS ', lang.s_or, ' A_AC3'])]
+            row = [3, awesome, lang.s_att_acodec, ''.join(['A_DTS ', lang.s_or, ' A_AC3'])]
             i = 1
             codec_ids = []
             language_ids = []
@@ -493,7 +493,7 @@ pageTracker._trackPageview();
             tbl += thead(tr(th(self.lang.s_compliance), th(self.lang.s_attribute), th(self.lang.s_requirement), th(self.lang.s_value), __inline=True))
             tbdy = tbl.add(tbody())
             for check in self.check_table:
-                t = tr(map(td, check[1:5]), __inline=True)
+                t = tr(map(td, check[1:5]), id='check%s' % check[0], __inline=True)
                 t.children[-1]['class'] = get_status_class(check[5])
                 tbdy += t
             
