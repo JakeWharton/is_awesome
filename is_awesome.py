@@ -3,7 +3,6 @@
 import sys, os
 sys.path.append('vendor/pyy')
 
-from pyy.request      import request
 from pyy.url_resolver import resolve
 from pyy.xhtml11      import *
 
@@ -11,6 +10,7 @@ from pyy.xhtml11      import *
 PASS = 0
 WARN = 1
 FAIL = 2
+
 
 def MediaInfo2Dict(text, video='Video', encoding_settings='Encoding settings'):
     '''
@@ -38,28 +38,6 @@ def MediaInfo2Dict(text, video='Video', encoding_settings='Encoding settings'):
     return d
 
 
-def get_status_class(status):
-    if status >= FAIL:
-        return 'fail'
-    if status == WARN:
-        return 'warn'
-    return 'pass'
-
-
-def tdvalue(value, status=PASS):
-    v = td(value, _class='got ')
-    if status == PASS:
-        v['class'] += 'pass'
-    elif status == WARN:
-        v['class'] += 'warn'
-    else:
-        v['class'] += 'fail'
-    return v
-
-def trrow(test, attribute, requirement):
-    return tr(td(test), td(attribute), td(requirement), __inline=True)
-
-
 awesome = 'Awesome'
 dxva    = 'DXVA'
 
@@ -67,10 +45,10 @@ dxva    = 'DXVA'
 def check_compliance(text, is_animation, lang):
     info = MediaInfo2Dict(text)
     is_awesome = is_dxva = PASS
+    check_table = []
     
-    check_table  = table(cellspacing=0)
-    check_table += thead(tr(th(lang.s_compliance), th(lang.s_attribute), th(lang.s_requirement), th(lang.s_value), __inline=True ))
-    tbdy         = check_table.add(tbody())
+    def pyyjoin(*args):
+        return ''.join(map(str, args))
     
     ###################
     ### VIDEO TESTS ###
@@ -81,7 +59,7 @@ def check_compliance(text, is_animation, lang):
         
         #Check 1: 720p/1080p
         is_1080p = is_720p = False
-        row    = tbdy.add(trrow(dxva, lang.s_att_resolution, ['1080p ', lang.s_or, ' 720p']))
+        row    = [1, dxva, lang.s_att_resolution, '1080p ' + lang.s_or + ' 720p']
         width  = int(video[lang.s_width ].replace(lang.s_pixels, '').replace(' ', '').strip())
         height = int(video[lang.s_height].replace(lang.s_pixels, '').replace(' ', '').strip())
         res    = '%sx%s' % (width, height)
@@ -96,37 +74,39 @@ def check_compliance(text, is_animation, lang):
             #Wider than high (compared to 16:9), check width
             if width == 1920:
                 is_1080p = True
-                row += tdvalue('1080p (%s)' % res)
+                row += ['1080p (%s)' % res, PASS]
             elif width == 1280:
                 is_720p = True
-                row += tdvalue('720p (%s)' % res)
+                row += ['720p (%s)' % res, PASS]
             else:
-                row += tdvalue(res, FAIL)
+                row += [res, FAIL]
                 is_dxva |= FAIL
         else:
             #Taller than wide (compared to 16:9), check height
             if height == 1080:
                 is_1080p = True
-                row += tdvalue('1080p (%s)' % res)
+                row += ['1080p (%s)' % res, PASS]
             elif height == 720:
                 is_720p = True
-                row += tdvalue('720p (%s)' % res)
+                row += ['720p (%s)' % res, PASS]
             else:
-                row += tdvalue(res, FAIL)
+                row += [res, FAIL]
                 is_dxva |= FAIL
+        check_table.append(row)
         
         #Check 2: is x264
-        row = tbdy.add(trrow(awesome, lang.s_att_vcodec, 'V_MPEG4/ISO/AVC (x264)'))
+        row = [2, awesome, lang.s_att_vcodec, 'V_MPEG4/ISO/AVC']
         if lang.s_codecid not in video:
-            row += tdvalue(lang.s_missing, FAIL)
+            row += [lang.s_missing, FAIL]
             is_awesome |= FAIL
         else:
             codec = video[lang.s_codecid]
             if codec == 'V_MPEG4/ISO/AVC':
-                row += tdvalue(codec)
+                row += [codec, PASS]
             else:
-                row += tdvalue(codec, FAIL)
+                row += [codec, FAIL]
                 is_awesome |= FAIL
+        check_table.append(row)
         
         ###############################
         ### ENCODING SETTINGS TESTS ###
@@ -137,22 +117,22 @@ def check_compliance(text, is_animation, lang):
             encoding = video[lang.s_att_encoding]
             
             #Check 5: cabac = 1
-            row = tbdy.add(trrow(awesome, code('cabac'), lang.s_req_cabac))
+            row = [5, awesome, code('cabac'), lang.s_req_cabac]
             if 'cabac' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_awesome |= FAIL
             else:
                 cabac = encoding['cabac']
                 if cabac == '1':
-                    row += tdvalue(cabac)
+                    row += [cabac, PASS]
                 else:
-                    row += tdvalue(cabac, FAIL)
+                    row += [cabac, FAIL]
                     is_awesome |= FAIL
+            check_table.append(row)
             
             #Check 6: Reference frames
             if not is_1080p and not is_720p:
-                row = tbdy.add(trrow(dxva, lang.s_att_ref, lang.s_req_ref % ('?', '?')))
-                row += tdvalue(lang.s_invalidres, FAIL)
+                row = [6, dxva, lang.s_att_ref, lang.s_req_ref % ('?', '?'), lang.s_invalidres, FAIL]
                 is_dxva |= FAIL
             else:
                 refs = [
@@ -165,178 +145,187 @@ def check_compliance(text, is_animation, lang):
                         ref_high = allowed_ref_high
                         break
                 
-                row = tbdy.add(trrow(dxva, lang.s_att_ref, lang.s_req_ref % (ref_low, ref_high)))
+                row = [6, dxva, lang.s_att_ref, lang.s_req_ref % (ref_low, ref_high)]
                 if 'ref' not in encoding:
-                    row += tdvalue(lang.s_missing, FAIL)
+                    row += [lang.s_missing, FAIL]
                     is_dxva |= FAIL
                 else:
                     ref = int(encoding['ref'])
                     
                     if ref_low <= ref <= ref_high:
-                        row += tdvalue(ref)
+                        row += [ref, PASS]
                     else:
-                        row += tdvalue(ref, FAIL)
+                        row += [ref, FAIL]
                         is_dxva |= FAIL
+            check_table.append(row)
             
             #Check 7: vbv_maxrate <= 50000
-            row = tbdy.add(trrow(dxva, code('vbv_maxrate'), lang.s_req_vbvmaxrate))
+            row = [7, dxva, code('vbv_maxrate'), lang.s_req_vbvmaxrate]
             if 'vbv_maxrate' not in encoding:
-                row += tdvalue(lang.s_missing, WARN)
+                row += [lang.s_missing, WARN]
                 is_dxva |= WARN
             else:
                 vbv_maxrate = int(encoding['vbv_maxrate'])
                 if vbv_maxrate <= 50000:
-                    row += tdvalue(vbv_maxrate)
+                    row += [vbv_maxrate, PASS]
                 else:
-                    row += tdvalue(vbv_maxrate, FAIL)
+                    row += [vbv_maxrate, FAIL]
                     is_dxva |= FAIL
+            check_table.append(row)
             
             #Check 8: vbv_bufsize <= 50000
-            row = tbdy.add(trrow(dxva, code('vbv_bufsize'), lang.s_req_vbvbufsize))
+            row = [8, dxva, code('vbv_bufsize'), lang.s_req_vbvbufsize]
             if 'vbv_bufsize' not in encoding:
-                row += tdvalue(lang.s_missing, WARN)
+                row += [lang.s_missing, WARN]
                 is_dxva |= WARN
             else:
                 vbv_bufsize = int(encoding['vbv_bufsize'])
                 if vbv_bufsize <= 50000:
-                    row += tdvalue(vbv_bufsize)
+                    row += [vbv_bufsize, PASS]
                 else:
-                    row += tdvalue(vbv_bufsize, FAIL)
+                    row += [vbv_bufsize, FAIL]
                     is_dxva |= FAIL
+            check_table.append(row)
             
             #Check 9: analyse = 0x3:0x113
-            row = tbdy.add(trrow(dxva, code('analyse'), lang.s_req_analyse))
+            row = [9, dxva, code('analyse'), lang.s_req_analyse]
             if 'analyse' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_dxva |= FAIL
             else:
                 analyse = encoding['analyse']
                 if analyse == '0x3:0x113':
-                    row += tdvalue(analyse)
+                    row += [analyse, PASS]
                 else:
-                    row += tdvalue(analyse, FAIL)
+                    row += [analyse, FAIL]
                     is_dxva |= FAIL
+            check_table.append(row)
             
             #Check 10: rc = crf or 2pass
-            row = tbdy.add(trrow(awesome, code('rc'), ['"crf" ', lang.s_or, ' "2pass"']))
+            row = [10, awesome, code('rc'), '"crf" ' + lang.s_or + ' "2pass"']
             if 'rc' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_awesome |= FAIL
             else:
                 rc = encoding['rc']
                 if rc == 'crf' or rc == '2pass':
-                    row += tdvalue(rc)
+                    row += [rc, PASS]
                 else:
-                    row += tdvalue(rc, FAIL)
+                    row += [rc, FAIL]
                     is_awesome |= FAIL
+            check_table.append(row)
             
             #Check 11: me_range >= 16
-            row = tbdy.add(trrow(awesome, code('me_range'), lang.s_req_merange))
+            row = [11, awesome, code('me_range'), lang.s_req_merange]
             if 'me_range' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_awesome |= FAIL
             else:
                 me_range = int(encoding['me_range'])
                 if me_range >= 16:
-                    row += tdvalue(me_range)
+                    row += [me_range, PASS]
                 else:
-                    row += tdvalue(me_range, FAIL)
+                    row += [me_range, FAIL]
                     is_awesome |= FAIL
+            check_table.append(row)
             
             #Check 12: trellis = 1 or 2 or deadzone <= 10
-            row = tbdy.add(trrow(awesome, [code('trellis'), br(), em(lang.s_or), br(), code('deadzone')], [lang.s_req_trellis, br(), em(lang.s_or), br(), lang.s_req_deadzone]))
+            row = [12, awesome, pyyjoin(code('trellis'), br(), em(lang.s_or), br(), code('deadzone')), pyyjoin(lang.s_req_trellis, br(), em(lang.s_or), br(), lang.s_req_deadzone)]
             if 'trellis' not in encoding and 'deadzone' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_awesome |= FAIL
             else:
                 if 'trellis' in encoding:
                     trellis = int(encoding['trellis'])
                     if 1 <= trellis <= 2:
-                        row += tdvalue([trellis, br(), em(lang.s_and), br(), lang.s_skipped])
+                        row += [pyyjoin(trellis, br(), em(lang.s_and), br(), lang.s_skipped), PASS]
                     else:
                         if 'deadzone' in encoding:
                             deadzone = tuple(map(int, encoding['deadzone'].split(',')))
                             if deadzone <= (10,10):
-                                row += tdvalue([trellis, br(), lang.s_and, br(), encoding['deadzone']])
+                                row += [pyyjoin(trellis, br(), em(lang.s_and), br(), encoding['deadzone']), PASS]
                             else:
-                                row += tdvalue([trellis, br(), lang.s_and, br(), encoding['deadzone']], FAIL)
+                                row += [pyyjoin(trellis, br(), em(lang.s_and), br(), encoding['deadzone']), FAIL]
                                 is_awesome |= FAIL
                         else:
-                            row += tdvalue([trellis, br(), lang.s_and, br(), lang.s_missing.lower()], FAIL)
+                            row += [pyyjoin(trellis, br(), em(lang.s_and), br(), lang.s_missing.lower()), FAIL]
                             is_awesome |= FAIL
                 else: #if 'trellis' not in encoding ('deadzone' in encoding)
                     deadzone = tuple(map(int, encoding['deadzone'].split(',')))
                     if deadzone <= (10,10):
-                        row += tdvalue([lang.s_missing, br(), lang.s_and, br(), encoding['deadzone']])
+                        row += [pyyjoin(lang.s_missing, br(), em(lang.s_and), br(), encoding['deadzone']), PASS]
                     else:
-                        row += tdvalue([lang.s_missing, br(), lang.s_and, br(), encoding['deadzone']], FAIL)
+                        row += [pyyjoin(lang.s_missing, br(), em(lang.s_and), br(), encoding['deadzone']), FAIL]
                         is_awesome |= FAIL
+            check_table.append(row)
             
             #Check 13: bframe >= 3
-            row = tbdy.add(trrow(awesome, code('bframes'), lang.s_req_bframe))
+            row = [13, awesome, code('bframes'), lang.s_req_bframe]
             if 'bframes' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_awesome |= FAIL
             else:
                 bframes = int(encoding['bframes'])
                 if bframes >= 3:
-                    row += tdvalue(bframes)
+                    row += [bframes, PASS]
                 else:
-                    row += tdvalue(bframes, FAIL)
+                    row += [bframes, FAIL]
                     is_awesome |= FAIL
+            check_table.append(row)
             
             #Check 14: deblock
             deblock = lang.s_req_deblock_a if is_animation else lang.s_req_deblock_na
-            row = tbdy.add(trrow(awesome, code('deblock'), deblock))
+            row     = [14, awesome, code('deblock'), deblock]
             if 'deblock' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_awesome |= FAIL
             else:
                 deblock = tuple(map(int, encoding['deblock'].split(':')[1:]))
-                low  = 0 if is_animation else -3
-                high = 2 if is_animation else -1
+                low     = 0 if is_animation else -3
+                high    = 2 if is_animation else -1
                 
                 if (low,low) <= deblock <= (high,high):
-                    row += tdvalue(deblock[0])
+                    row += [deblock[0], PASS]
                 else:
-                    row += tdvalue(deblock[0], FAIL)
+                    row += [deblock[0], FAIL]
                     is_awesome |= FAIL
+            check_table.append(row)
             
             #Check 15: me != dia or hex
-            row = tbdy.add(trrow(awesome, code('me'), lang.s_req_me % ('dia', 'hex')))
+            row = [15, awesome, code('me'), lang.s_req_me % ('dia', 'hex')]
             if 'me' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_awesome |= FAIL
             else:
                 me = encoding['me']
                 if me != 'dia' and me != 'hex':
-                    row += tdvalue(me)
+                    row += [me, PASS]
                 else:
-                    row += tdvalue(me, FAIL)
+                    row += [me, FAIL]
                     is_awesome |= FAIL
+            check_table.append(row)
             
             #Check 16: subme >= 7
-            row = tbdy.add(trrow(awesome, code('subme'), lang.s_req_subme))
+            row = [16, awesome, code('subme'), lang.s_req_subme]
             if 'subme' not in encoding:
-                row += tdvalue(lang.s_missing, FAIL)
+                row += [lang.s_missing, FAIL]
                 is_awesome |= FAIL
             else:
                 subme = int(encoding['subme'])
                 if subme >= 7:
-                    row += tdvalue(subme)
+                    row += [subme, PASS]
                 else:
-                    row += tdvalue(subme, FAIL)
+                    row += [subme, FAIL]
                     is_awesome |= FAIL
+            check_table.append(row)
             
         else: #if lang.s_att_encoding not in video
-            row  = tbdy.add(trrow(dxva, lang.s_att_encoding, lang.s_req_encoding))
-            row += tdvalue(lang.s_missing, FAIL)
+            check_table.append([0, dxva, lang.s_att_encoding, lang.s_req_encoding, lang.s_missing, FAIL])
             is_awesome |= FAIL
             is_dxva    |= FAIL
         
     else: #if lang.s_video not in info
-        row  = tbdy.add(trrow(dxva, lang.s_att_video, lang.s_req_video))
-        row += tdvalue(lang.s_missing, FAIL)
+        check_table.append([0, dxva, lang.s_att_video, lang.s_req_video, lang.s_missing, FAIL])
         is_awesome |= FAIL
         is_dxva    |= FAIL
     
@@ -347,39 +336,39 @@ def check_compliance(text, is_animation, lang):
     if lang.s_audio in info:
         audio = info[lang.s_audio]
         
-        row = tbdy.add(trrow(awesome, lang.s_att_acodec, ['A_DTS ', lang.s_or, ' A_AC3']))
+        row = [0, awesome, lang.s_att_acodec, ''.join(['A_DTS ', lang.s_or, ' A_AC3'])]
         if lang.s_codecid not in audio:
-            row += tdvalue(lang.s_missing, FAIL)
+            row += [lang.s_missing, FAIL]
             is_awesome |= FAIL
         else:
             acodec = audio[lang.s_codecid]
             if acodec == 'A_DTS' or acodec == 'A_AC3':
-                row += tdvalue(acodec)
+                row += [acodec, PASS]
             else:
-                row += tdvalue(acodec, FAIL)
+                row += [acodec, FAIL]
                 is_awesome |= FAIL
     else: #if lang.s_audio not in info
         if lang.s_audio_n % 1 not in info:
-            row  = tbdy.add(trrow(awesome, lang.s_att_audio, lang.s_req_audio))
-            row += tdvalue(lang.s_missing, FAIL)
+            row  = [0, awesome, lang.s_att_audio, lang.s_req_audio, lang.s_missing, FAIL]
             is_awesome |= FAIL
         else:
-            row = tbdy.add(trrow(awesome, lang.s_att_acodec, ['A_DTS ', lang.s_or, ' A_AC3']))
+            row = [0, awesome, lang.s_att_acodec, ''.join(['A_DTS ', lang.s_or, ' A_AC3'])]
             i = 1
             codec_ids = []
             language_ids = []
             while True:
                 if lang.s_audio_n % i not in info:
-                    row += tdvalue(lang.s_missing, FAIL)
+                    row += [lang.s_missing, FAIL]
                     is_awesome |= FAIL
                     break
                 
                 audio = info[lang.s_audio_n % i]
                 if lang.s_codecid in audio and (audio[lang.s_codecid] == 'A_DTS' or audio[lang.s_codecid] == 'A_AC3'):
-                    row += tdvalue(audio[lang.s_codecid])
+                    row += [audio[lang.s_codecid], PASS]
                     break
                 
                 i += 1
+    check_table.append(row)
     
     
     ######################
@@ -388,36 +377,36 @@ def check_compliance(text, is_animation, lang):
     
     #Check 4: English subtitles
     if lang.s_text in info:
-        row = tbdy.add(trrow(awesome, lang.s_att_tlang, lang.s_req_tlang))
+        row = [4, awesome, lang.s_att_tlang, lang.s_req_tlang]
         tlang = info[lang.s_text][lang.s_language]
         if tlang == lang.s_english:
-            row += tdvalue(tlang)
+            row += [tlang, PASS]
         else:
-            row += tdvalue(lang.s_missing, FAIL)
+            row += [lang.s_missing, FAIL]
             is_awesome |= FAIL
     else:
         if lang.s_text_n % 1 not in info:
-            row  = tbdy.add(trrow(awesome, lang.s_att_text, lang.s_req_text))
-            row += tdvalue(lang.s_missing, FAIL)
+            row = [4, awesome, lang.s_att_text, lang.s_req_text, lang.s_missing, FAIL]
             is_awesome |= FAIL
         else:
-            row = tbdy.add(trrow(awesome, lang.s_att_tlang, lang.s_req_tlang))
+            row = [4, awesome, lang.s_att_tlang, lang.s_req_tlang]
             
             i = 1
             langs = []
             while True:
                 if lang.s_text_n % i not in info:
-                    row += tdvalue(', '.join(langs), FAIL)
+                    row += [', '.join(langs), FAIL]
                     is_awesome |= FAIL
                     break
                 
                 tlang = info[lang.s_text_n % i][lang.s_language]
                 if tlang == lang.s_english:
-                    row += tdvalue(tlang)
+                    row += [tlang, PASS]
                     break
                 
                 langs.append(tlang)
                 i += 1
+    check_table.append(row)
     
     return is_awesome, is_dxva, check_table
 
@@ -490,9 +479,23 @@ pageTracker._trackPageview();
             content += p(pre(self.error))
             content += p('Please post the above traceback along with your MediaInfo input ', a('here', href='https://awesome-hd.com/forums.php?action=viewthread&threadid=508'), '.' )
         elif self.is_post:
+            def get_status_class(status):
+                if status >= FAIL:
+                    return 'fail'
+                if status == WARN:
+                    return 'warn'
+                return 'pass'
+            
             content += div(h1('DXVA'), p(self.lang.s_dxva_desc), _class='compliance %s' % get_status_class(self.is_dxva))
             content += div(h1('Awesome'), p(self.lang.s_awesome_desc), _class='compliance %s' % get_status_class(self.is_awesome))
-            content += self.check_table
+            
+            tbl  = content.add(table(cellspacing=0))
+            tbl += thead(tr(th(self.lang.s_compliance), th(self.lang.s_attribute), th(self.lang.s_requirement), th(self.lang.s_value), __inline=True))
+            tbdy = tbl.add(tbody())
+            for check in self.check_table:
+                t = tr(map(td, check[1:5]), __inline=True)
+                t.children[-1]['class'] = get_status_class(check[5])
+                tbdy += t
             
             content += div(a(self.lang.s_tryagain, ' &raquo;', href='/%s/' % self.locale), __inline=True)
         else:
