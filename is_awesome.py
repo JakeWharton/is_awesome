@@ -154,7 +154,8 @@ def check_compliance(text, is_animation, lang):
                 [(540, 12), (588, 11), (648, 10), (720, 9)], #720p
                 [(720, 6) , (864, 5) , (1080, 4)          ], #1080p
             ]
-            ref_low = 3 if is_1080p else 5
+            ref_low  = 3 if is_1080p else 5
+            ref_high = '?'
             for allowed_height, allowed_ref_high in refs[int(is_1080p)]:
                 if height <= allowed_height:
                     ref_high = allowed_ref_high
@@ -502,11 +503,11 @@ pageTracker._trackPageview();
             content += p(self.lang.s_content_2a, ' ', a('MediaInfo', href='http://mediainfo.sf.net'), ' ', self.lang.s_content_2b, __inline=True)
             frm  = content.add(form(method='post', action=''))
             frm += label(self.lang.s_is_anim, ':', _for='is_animation')
-            frm += input_(type='checkbox', name='is_animation')
+            frm += _input(type='checkbox', name='is_animation')
             frm += br()
             frm += textarea(name='mediainfo')
             frm += br()
-            frm += input_(type='submit', name='submit', value=self.lang.s_check)
+            frm += _input(type='submit', name='submit', value=self.lang.s_check)
 
 
 #class JSON(AwesomeChecker):
