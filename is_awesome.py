@@ -1,10 +1,9 @@
-#!/home/jakewharton/bin/python vendor/pyy/pyy/cgi.py
+#!/home/jakewharton/bin/python
 
-import sys, os
-sys.path.append('vendor/pyy')
+import pyy_cgi.cgi
 
-from pyy.url_resolver import resolve
-from pyy.xhtml11      import *
+from pyy_html          import *
+from pyy_web.resolvers import RegexResolver
 
 #Test Statuses
 PASS = 0
@@ -411,10 +410,9 @@ def check_compliance(text, is_animation, lang):
     return is_awesome, is_dxva, check_table
 
 
-class AwesomeChecker(htmlpage):
+class AwesomeChecker(document):
     def __init__(self, **kwargs):
-        htmlpage.__init__(self, **kwargs)
-        self.title = 'Is Awesome?'
+        document.__init__(self, title='Is Awesome?', **kwargs)
         
         #Import locale strings
         self.locale = self.request.get['locale']
@@ -426,14 +424,6 @@ class AwesomeChecker(htmlpage):
             name = 'languages.en_US'
             __import__(name)
         self.lang = sys.modules[name]
-        
-        #Copy equal string values
-        self.lang.s_req_vbvbufsize = self.lang.s_req_vbvmaxrate
-        self.lang.s_req_audio      = self.lang.s_req_video
-        self.lang.s_req_text       = self.lang.s_req_video
-        self.lang.s_req_encoding   = self.lang.s_req_video
-        self.lang.s_req_tlang      = self.lang.s_req_alang
-        self.lang.s_content_2b    %= self.lang.s_check
         
         self.is_post = 'mediainfo' in self.request.post
         self.error   = None
@@ -456,9 +446,11 @@ class XHTML(AwesomeChecker):
     def __init__(self, **kwargs):
         AwesomeChecker.__init__(self, **kwargs)
         
-        self.html.head += link(rel='stylesheet', type='text/css', href='/static/is_awesome.css')
+        self.content_type = 'text/html'
         
-        wrapper  = self.html.body.add(div(id='wrapper'))
+        self.head += link(rel='stylesheet', type='text/css', href='/static/is_awesome.css')
+        
+        wrapper  = self.add(div(id='wrapper'))
         wrapper += div(h1(a('Is Awesome?', href='/')), id='header', __inline=True)
         content  = wrapper.add(div(id='content'))
         footer   = wrapper.add(div(id='footer'))
@@ -469,11 +461,11 @@ class XHTML(AwesomeChecker):
         footer  += div(self.lang.s_designed, ' ', a('Jake Wharton', href='http://jakewharton.com'), '. ', a(self.lang.s_source, href='http://github.com/JakeWharton/is_awesome/'), '.', id='about', __inline=True)
         
         #Google Analytics
-        self.html.body += script('''
+        self += script('''
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 ''', type='text/javascript')
-        self.html.body += script('''
+        self += script('''
 try {
 var pageTracker = _gat._getTracker("UA-3637749-9");
 pageTracker._trackPageview();
@@ -512,30 +504,26 @@ pageTracker._trackPageview();
 
 class JSON(AwesomeChecker):
     def render(self):
-        r = 'Content-type: application/json\n\n'
-        if self.is_post:
-            checks = ', '.join('"%s": {"compliance": "%s", "attribute": "%s", "requirement": "%s", "value": "%s", "level": "%s"}' % (check[0], check[1], check[2], check[3].replace('"', r'\"'), check[4], get_status_class(check[5])) for check in self.check_table)
-            r += '{"dxva": "%s", "awesome": "%s", "checks": {%s}}' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome), checks)
-        else:
-            r += '{}'
-        return r
+        self.content_type = 'application/json'
+        
+        checks = ', '.join('"%s": {"compliance": "%s", "attribute": "%s", "requirement": "%s", "value": "%s", "level": "%s"}' % (check[0], check[1], check[2], check[3].replace('"', r'\"'), check[4], get_status_class(check[5])) for check in self.check_table)
+        return '{"dxva": "%s", "awesome": "%s", "checks": {%s}}' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome), checks)
 
 class XML(AwesomeChecker):
     def render(self):
-        r =  'Content-type: application/xml\n\n<?xml version="1.0" encoding="UTF-8"?>\n\n'
-        if self.is_post:
-            r += '<compliant dxva="%s" awesome="%s">\n' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome))
-            for check in self.check_table:
-                r += '  <check id="%s">\n' % check[0]
-                r += '    <compliance>%s</compliance>\n' % check[1]
-                r += '    <attribute>%s</attribute>\n' % check[2]
-                r += '    <requirement>%s</requirement>\n' % check[3]
-                r += '    <value>%s</value>\n' % check[4]
-                r += '    <level>%s</level>\n' % get_status_class(check[5])
-                r += '  </check>\n'
-            r += '</compliant>'
-        else:
-            r += '<compliant />'
+        self.content_type = 'application/xml'
+        
+        r =  '<?xml version="1.0" encoding="UTF-8"?>\n\n'
+        r += '<compliant dxva="%s" awesome="%s">\n' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome))
+        for check in self.check_table:
+            r += '  <check id="%s">\n' % check[0]
+            r += '    <compliance>%s</compliance>\n' % check[1]
+            r += '    <attribute>%s</attribute>\n' % check[2]
+            r += '    <requirement>%s</requirement>\n' % check[3]
+            r += '    <value>%s</value>\n' % check[4]
+            r += '    <level>%s</level>\n' % get_status_class(check[5])
+            r += '  </check>\n'
+        r += '</compliant>'
         return r
 
 
@@ -546,4 +534,13 @@ urls = (
     (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/xml/$' , XML  ),
 )
 
-print resolve(urls)
+
+def get(handler, request, response, *args):
+    page = XHTML(request=request)
+    response.headers['Content-Type'] = page.content_type
+    response.body = page.render()
+
+def post(handler, request, response, *args):
+    page = RegexResolver(urls, request)
+    response.headers['Content-Type'] = page.content_type
+    response.body = page.render()
