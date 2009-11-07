@@ -2,8 +2,11 @@
 
 import pyy_cgi.cgi
 
-from pyy_html          import *
-from pyy_web.resolvers import RegexResolver
+import os
+import re
+import sys
+from pyy_html        import *
+from pyy_web.resolve import RegexResolver
 
 #Test Statuses
 PASS = 0
@@ -16,7 +19,6 @@ def MediaInfo2Dict(text, video='Video', encoding_settings='Encoding settings'):
     This method takes the text output from the program MediaInfo and parses it
     into a dictionary heirarchy.
     '''
-    import re
     rkeyval   = re.compile(r'\s*:\s')
     rnewline1 = re.compile('\r|\n')
     rnewline2 = re.compile('\r{2}|\n{2}')
@@ -495,52 +497,53 @@ pageTracker._trackPageview();
             content += p(self.lang.s_content_2a, ' ', a('MediaInfo', href='http://mediainfo.sf.net'), ' ', self.lang.s_content_2b, __inline=True)
             frm  = content.add(form(method='post', action=''))
             frm += label(self.lang.s_is_anim, ':', _for='is_animation')
-            frm += _input(type='checkbox', name='is_animation')
+            frm += input_(type='checkbox', name='is_animation')
             frm += br()
             frm += textarea(name='mediainfo')
             frm += br()
-            frm += _input(type='submit', name='submit', value=self.lang.s_check)
+            frm += input_(type='submit', name='submit', value=self.lang.s_check)
 
 
 class JSON(AwesomeChecker):
     def render(self):
         self.content_type = 'application/json'
         
-        checks = ', '.join('"%s": {"compliance": "%s", "attribute": "%s", "requirement": "%s", "value": "%s", "level": "%s"}' % (check[0], check[1], check[2], check[3].replace('"', r'\"'), check[4], get_status_class(check[5])) for check in self.check_table)
-        return '{"dxva": "%s", "awesome": "%s", "checks": {%s}}' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome), checks)
+        if self.is_post:
+            checks = ', '.join('"%s": {"compliance": "%s", "attribute": "%s", "requirement": "%s", "value": "%s", "level": "%s"}' % (check[0], check[1], check[2], check[3].replace('"', r'\"'), check[4], get_status_class(check[5])) for check in self.check_table)
+            return '{"dxva": "%s", "awesome": "%s", "checks": {%s}}' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome), checks)
+        else:
+            return '{}'
 
 class XML(AwesomeChecker):
     def render(self):
         self.content_type = 'application/xml'
         
         r =  '<?xml version="1.0" encoding="UTF-8"?>\n\n'
-        r += '<compliant dxva="%s" awesome="%s">\n' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome))
-        for check in self.check_table:
-            r += '  <check id="%s">\n' % check[0]
-            r += '    <compliance>%s</compliance>\n' % check[1]
-            r += '    <attribute>%s</attribute>\n' % check[2]
-            r += '    <requirement>%s</requirement>\n' % check[3]
-            r += '    <value>%s</value>\n' % check[4]
-            r += '    <level>%s</level>\n' % get_status_class(check[5])
-            r += '  </check>\n'
-        r += '</compliant>'
+        if self.is_post:
+            r += '<compliant dxva="%s" awesome="%s">\n' % (get_status_class(self.is_dxva), get_status_class(self.is_awesome))
+            for check in self.check_table:
+                r += '  <check id="%s">\n' % check[0]
+                r += '    <compliance>%s</compliance>\n' % check[1]
+                r += '    <attribute>%s</attribute>\n' % check[2]
+                r += '    <requirement>%s</requirement>\n' % check[3]
+                r += '    <value>%s</value>\n' % check[4]
+                r += '    <level>%s</level>\n' % get_status_class(check[5])
+                r += '  </check>\n'
+            r += '</compliant>'
+        else:
+            r += '<compliant/>'
         return r
 
 
 
-urls = (
+urls = [
     (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/$'     , XHTML),
     (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/json/$', JSON ),
     (r'^/(?P<locale>[a-z]{2}_[A-Z]{2})/xml/$' , XML  ),
-)
-
+]
 
 def get(handler, request, response, *args):
-    page = XHTML(request=request)
-    response.headers['Content-Type'] = page.content_type
-    response.body = page.render()
-
-def post(handler, request, response, *args):
     page = RegexResolver(urls, request)
     response.headers['Content-Type'] = page.content_type
     response.body = page.render()
+post = get
